@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV Filter &amp; PNG Viewer</title>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --border: #d7dde3;
+    --accent: #2563eb;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --text: #1f2937;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 20px; }
+  h2 { font-size: 1rem; margin: 0 0 12px; color: var(--accent); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+  select, input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fff;
+  }
+  select:disabled { background: #eef1f4; color: var(--muted); }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { filter: brightness(1.1); }
+  button:disabled { background: #9aa4b2; cursor: not-allowed; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { flex: 1 1 220px; }
+  .checkbox-list {
+    display: flex; flex-wrap: wrap; gap: 8px 16px;
+    max-height: 140px; overflow-y: auto;
+    border: 1px solid var(--border); border-radius: 6px; padding: 10px;
+  }
+  .checkbox-list label { font-weight: 400; display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; }
+  #filterDropdowns { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+  #filterDropdowns > div { flex: 1 1 220px; }
+  #resultBar {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #eef1f4;
+    color: var(--muted);
+  }
+  #resultBar.matched {
+    background: var(--green-bg);
+    border-color: var(--green);
+    color: #14532d;
+  }
+  .status { font-size: 0.83rem; color: var(--muted); margin-top: 6px; }
+  .status.error { color: #dc2626; }
+  .status.ok { color: var(--green); }
+  #pngPreview {
+    max-width: 100%;
+    max-height: 480px;
+    display: none;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background:
+      repeating-conic-gradient(#e5e7eb 0% 25%, #fff 0% 50%) 0 0 / 20px 20px;
+  }
+  .hidden { display: none; }
+  code { background: #eef1f4; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+</style>
+</head>
+<body>
+
+<h1>CSV Filter &amp; PNG Viewer</h1>
+
+<!-- Step 1: CSV -->
+<div class="card">
+  <h2>1. Load CSV</h2>
+  <input type="file" id="csvFile" accept=".csv,text/csv">
+  <div class="status" id="csvStatus">No file loaded.</div>
+</div>
+
+<!-- Step 2: Name column -->
+<div class="card hidden" id="nameCard">
+  <h2>2. Select the name column</h2>
+  <select id="nameColumn">
+    <option value="">-- choose column --</option>
+  </select>
+</div>
+
+<!-- Step 3: Filter columns -->
+<div class="card hidden" id="filterCard">
+  <h2>3. Select filter columns</h2>
+  <div class="checkbox-list" id="filterColumns"></div>
+  <div id="filterDropdowns"></div>
+</div>
+
+<!-- Step 4: Result -->
+<div class="card hidden" id="resultCard">
+  <h2>4. Filtered name</h2>
+  <input type="text" id="resultBar" readonly value="">
+  <div class="status" id="matchStatus"></div>
+</div>
+
+<!-- Step 5: Folder + PNG -->
+<div class="card hidden" id="folderCard">
+  <h2>5. Folder &amp; PNG</h2>
+  <div class="row">
+    <div>
+      <label>Parent folder (contains one subfolder per name)</label>
+      <input type="text" id="folderPath" readonly placeholder="No folder selected — browsers require picking it via the button">
+    </div>
+    <div style="flex: 0 0 auto;">
+      <button id="pickFolder">Choose folder…</button>
+      <input type="file" id="folderFallback" webkitdirectory class="hidden">
+    </div>
+  </div>
+  <div class="status" id="folderStatus"></div>
+
+  <div class="row" style="margin-top: 14px;">
+    <div>
+      <label for="pngSelect">PNG files in matched subfolder</label>
+      <select id="pngSelect" disabled>
+        <option value="">-- no PNGs --</option>
+      </select>
+    </div>
+    <div style="flex: 0 0 auto;">
+      <button id="exportPng" disabled>Export PNG</button>
+    </div>
+  </div>
+  <div class="status" id="pngStatus"></div>
+  <img id="pngPreview" alt="PNG preview">
+</div>
+
+<script>
+"use strict";
+
+// ---------- state ----------
+let headers = [];
+let rows = [];                  // array of string arrays
+let nameColIdx = -1;
+let filterColIdxs = [];         // indices of columns chosen as filters
+let filterSelections = {};      // colIdx -> selected value ("" = any)
+let matchedName = null;         // raw matched name (single row)
+let cleanedName = null;         // matched name with quotes removed
+
+let dirHandle = null;           // File System Access API handle (preferred)
+let fallbackFiles = null;       // FileList from webkitdirectory fallback
+let currentPngs = [];           // [{name, getBlob: async () => Blob}]
+let currentBlobUrl = null;
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+
+function setStatus(el, msg, cls) {
+  el.textContent = msg;
+  el.className = "status" + (cls ? " " + cls : "");
+}
+
+// Proper CSV parser: handles quoted fields, embedded commas, escaped quotes, CRLF
+function parseCSV(text) {
+  const out = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ""; }
+      else if (c === '\n') { row.push(field); out.push(row); row = []; field = ""; }
+      else if (c === '\r') { /* skip */ }
+      else field += c;
+    }
+  }
+  if (field !== "" || row.length) { row.push(field); out.push(row); }
+  return out.filter(r => r.some(v => v.trim() !== ""));
+}
+
+function stripQuotes(s) {
+  // remove any single or double quotes anywhere in the name
+  return s.replace(/["']/g, "").trim();
+}
+
+// Rows matching every active filter, optionally ignoring one column
+function matchingRows(excludeColIdx) {
+  return rows.filter(r =>
+    filterColIdxs.every(ci => {
+      if (ci === excludeColIdx) return true;
+      const v = filterSelections[ci];
+      return !v || r[ci] === v;
+    })
+  );
+}
+
+// ---------- step 1: CSV load ----------
+$("csvFile").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const parsed = parseCSV(text);
+    if (parsed.length < 2) throw new Error("CSV needs a header row and at least one data row.");
+    headers = parsed[0].map(h => h.trim());
+    rows = parsed.slice(1).map(r => {
+      const padded = r.slice(0, headers.length);
+      while (padded.length < headers.length) padded.push("");
+      return padded.map(v => v.trim());
+    });
+    setStatus($("csvStatus"), `Loaded "${file.name}" — ${rows.length} rows, ${headers.length} columns.`, "ok");
+    resetAfterCsv();
+  } catch (err) {
+    setStatus($("csvStatus"), "Failed to parse CSV: " + err.message, "error");
+  }
+});
+
+function resetAfterCsv() {
+  nameColIdx = -1;
+  filterColIdxs = [];
+  filterSelections = {};
+  matchedName = cleanedName = null;
+
+  const nameSel = $("nameColumn");
+  nameSel.innerHTML = '<option value="">-- choose column --</option>' +
+    headers.map((h, i) => `<option value="${i}">${escapeHtml(h)}</option>`).join("");
+
+  $("nameCard").classList.remove("hidden");
+  $("filterCard").classList.add("hidden");
+  $("resultCard").classList.add("hidden");
+  $("folderCard").classList.add("hidden");
+  $("filterColumns").innerHTML = "";
+  $("filterDropdowns").innerHTML = "";
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ---------- step 2: name column ----------
+$("nameColumn").addEventListener("change", e => {
+  nameColIdx = e.target.value === "" ? -1 : Number(e.target.value);
+  filterColIdxs = [];
+  filterSelections = {};
+
+  if (nameColIdx === -1) {
+    $("filterCard").classList.add("hidden");
+    $("resultCard").classList.add("hidden");
+    return;
+  }
+
+  // Build filter-column checkboxes (all columns except the name column)
+  const box = $("filterColumns");
+  box.innerHTML = headers.map((h, i) =>
+    i === nameColIdx ? "" :
+    `<label><input type="checkbox" data-col="${i}"> ${escapeHtml(h)}</label>`
+  ).join("");
+  box.querySelectorAll("input[type=checkbox]").forEach(cb =>
+    cb.addEventListener("change", onFilterColumnsChanged)
+  );
+
+  $("filterCard").classList.remove("hidden");
+  $("resultCard").classList.remove("hidden");
+  $("filterDropdowns").innerHTML = "";
+  updateResult();
+});
+
+// ---------- step 3: filter columns + cascading dropdowns ----------
+function onFilterColumnsChanged() {
+  filterColIdxs = [...$("filterColumns").querySelectorAll("input:checked")]
+    .map(cb => Number(cb.dataset.col));
+  // Drop selections for unchecked columns
+  for (const key of Object.keys(filterSelections)) {
+    if (!filterColIdxs.includes(Number(key))) delete filterSelections[key];
+  }
+  rebuildDropdowns();
+  updateResult();
+}
+
+function rebuildDropdowns() {
+  const wrap = $("filterDropdowns");
+  wrap.innerHTML = "";
+  for (const ci of filterColIdxs) {
+    const div = document.createElement("div");
+    const label = document.createElement("label");
+    label.textContent = headers[ci];
+    const sel = document.createElement("select");
+    sel.dataset.col = ci;
+    sel.addEventListener("change", () => {
+      filterSelections[ci] = sel.value;
+      refreshDropdownOptions();
+      updateResult();
+    });
+    div.appendChild(label);
+    div.appendChild(sel);
+    wrap.appendChild(div);
+  }
+  refreshDropdownOptions();
+}
+
+// Each dropdown only shows values still possible given the OTHER dropdowns' selections
+function refreshDropdownOptions() {
+  $("filterDropdowns").querySelectorAll("select").forEach(sel => {
+    const ci = Number(sel.dataset.col);
+    const possible = [...new Set(matchingRows(ci).map(r => r[ci]))].sort();
+    const current = filterSelections[ci] || "";
+    sel.innerHTML = '<option value="">-- any --</option>' +
+      possible.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    if (possible.includes(current)) {
+      sel.value = current;
+    } else {
+      sel.value = "";
+      filterSelections[ci] = "";
+    }
+  });
+}
+
+// ---------- step 4: result ----------
+function updateResult() {
+  const bar = $("resultBar");
+  const matched = matchingRows(null);
+  const status = $("matchStatus");
+
+  if (matched.length === 1 && nameColIdx !== -1) {
+    matchedName = matched[0][nameColIdx];
+    cleanedName = stripQuotes(matchedName);
+    bar.value = matchedName;
+    bar.classList.add("matched");
+    setStatus(status, `Exactly 1 row matched. Folder lookup name: "${cleanedName}"`, "ok");
+    $("folderCard").classList.remove("hidden");
+    scanFolder();
+  } else {
+    matchedName = cleanedName = null;
+    bar.value = matched.length === 0 ? "No rows match" : `${matched.length} rows match — keep filtering`;
+    bar.classList.remove("matched");
+    setStatus(status, "Narrow the filters until exactly one row remains.");
+    clearPngUI("Waiting for a single matched name.");
+  }
+}
+
+// ---------- step 5: folder + PNGs ----------
+$("pickFolder").addEventListener("click", async () => {
+  if (window.showDirectoryPicker) {
+    try {
+      dirHandle = await window.showDirectoryPicker();
+      fallbackFiles = null;
+      $("folderPath").value = dirHandle.name;
+      setStatus($("folderStatus"), `Folder "${dirHandle.name}" selected.`, "ok");
+      scanFolder();
+    } catch (err) {
+      if (err.name !== "AbortError") setStatus($("folderStatus"), "Folder pick failed: " + err.message, "error");
+    }
+  } else {
+    // Fallback for browsers without the File System Access API
+    $("folderFallback").click();
+  }
+});
+
+$("folderFallback").addEventListener("change", e => {
+  fallbackFiles = e.target.files;
+  dirHandle = null;
+  if (fallbackFiles.length) {
+    const root = fallbackFiles[0].webkitRelativePath.split("/")[0];
+    $("folderPath").value = root;
+    setStatus($("folderStatus"), `Folder "${root}" loaded (${fallbackFiles.length} files scanned).`, "ok");
+  }
+  scanFolder();
+});
+
+async function scanFolder() {
+  if (!cleanedName) return;
+  if (!dirHandle && !fallbackFiles) {
+    clearPngUI("Choose the parent folder to look up the matched subfolder.");
+    return;
+  }
+
+  currentPngs = [];
+  try {
+    if (dirHandle) {
+      // Find subfolder matching the cleaned name (exact first, then case-insensitive)
+      let sub = null;
+      for await (const [name, handle] of dirHandle.entries()) {
+        if (handle.kind !== "directory") continue;
+        if (name === cleanedName) { sub = handle; break; }
+        if (!sub && name.toLowerCase() === cleanedName.toLowerCase()) sub = handle;
+      }
+      if (!sub) {
+        clearPngUI(`No subfolder named "${cleanedName}" found in "${dirHandle.name}".`, true);
+        return;
+      }
+      for await (const [name, handle] of sub.entries()) {
+        if (handle.kind === "file" && /\.png$/i.test(name)) {
+          currentPngs.push({ name, getBlob: () => handle.getFile() });
+        }
+      }
+    } else {
+      // webkitdirectory fallback: match on path segment
+      const target = cleanedName.toLowerCase();
+      for (const f of fallbackFiles) {
+        const parts = f.webkitRelativePath.split("/");
+        // parts[0] = picked root; look for the named folder as a direct child
+        if (parts.length >= 3 && parts[1].toLowerCase() === target && /\.png$/i.test(f.name)) {
+          currentPngs.push({ name: f.name, getBlob: async () => f });
+        }
+      }
+      if (!currentPngs.length) {
+        clearPngUI(`No subfolder "${cleanedName}" with PNG files found under the selected folder.`, true);
+        return;
+      }
+    }
+  } catch (err) {
+    clearPngUI("Error reading folder: " + err.message, true);
+    return;
+  }
+
+  if (!currentPngs.length) {
+    clearPngUI(`Subfolder "${cleanedName}" contains no PNG files.`, true);
+    return;
+  }
+
+  currentPngs.sort((a, b) => a.name.localeCompare(b.name));
+  const sel = $("pngSelect");
+  sel.innerHTML = currentPngs.map((p, i) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join("");
+  sel.disabled = false;
+  $("exportPng").disabled = false;
+  setStatus($("pngStatus"), `${currentPngs.length} PNG file(s) found in "${cleanedName}".`, "ok");
+  showPng(0);
+}
+
+$("pngSelect").addEventListener("change", e => showPng(Number(e.target.value)));
+
+async function showPng(idx) {
+  const entry = currentPngs[idx];
+  if (!entry) return;
+  try {
+    const blob = await entry.getBlob();
+    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = URL.createObjectURL(blob);
+    const img = $("pngPreview");
+    img.src = currentBlobUrl;
+    img.style.display = "block";
+  } catch (err) {
+    setStatus($("pngStatus"), "Could not display PNG: " + err.message, "error");
+  }
+}
+
+$("exportPng").addEventListener("click", async () => {
+  const idx = Number($("pngSelect").value);
+  const entry = currentPngs[idx];
+  if (!entry || !cleanedName) return;
+  try {
+    const blob = await entry.getBlob();
+    const baseName = entry.name.replace(/\.png$/i, "");
+    // Exported name = filtered name + original png name
+    const exportName = `${cleanedName}_${baseName}.png`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = exportName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setStatus($("pngStatus"), `Exported as "${exportName}".`, "ok");
+  } catch (err) {
+    setStatus($("pngStatus"), "Export failed: " + err.message, "error");
+  }
+});
+
+function clearPngUI(msg, isError) {
+  currentPngs = [];
+  const sel = $("pngSelect");
+  sel.innerHTML = '<option value="">-- no PNGs --</option>';
+  sel.disabled = true;
+  $("exportPng").disabled = true;
+  $("pngPreview").style.display = "none";
+  if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+  setStatus($("pngStatus"), msg || "", isError ? "error" : "");
+}
+</script>
+</body>
+</html>

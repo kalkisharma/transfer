@@ -79,6 +79,18 @@
     border-color: var(--green);
     color: #14532d;
   }
+  #dropZone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: default;
+  }
+  #dropZone.dragover { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
+  #dropZone.set { border-style: solid; border-color: var(--green); background: var(--green-bg); color: #14532d; font-weight: 600; }
   .status { font-size: 0.83rem; color: var(--muted); margin-top: 6px; }
   .status.error { color: #dc2626; }
   .status.ok { color: var(--green); }
@@ -93,58 +105,52 @@
       repeating-conic-gradient(#e5e7eb 0% 25%, #fff 0% 50%) 0 0 / 20px 20px;
   }
   .hidden { display: none; }
-  code { background: #eef1f4; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
 </style>
 </head>
 <body>
 
 <h1>CSV Filter &amp; PNG Viewer</h1>
 
-<!-- Step 1: CSV -->
+<!-- Step 1: Folder (drag & drop) -->
 <div class="card">
-  <h2>1. Load CSV</h2>
+  <h2>1. Drop the parent folder</h2>
+  <div id="dropZone">Drag the parent folder (the one containing one subfolder per name) from File Explorer and drop it here</div>
+  <div class="status" id="folderStatus"></div>
+</div>
+
+<!-- Step 2: CSV -->
+<div class="card hidden" id="csvCard">
+  <h2>2. Load CSV</h2>
   <input type="file" id="csvFile" accept=".csv,text/csv">
   <div class="status" id="csvStatus">No file loaded.</div>
 </div>
 
-<!-- Step 2: Name column -->
+<!-- Step 3: Name column -->
 <div class="card hidden" id="nameCard">
-  <h2>2. Select the name column</h2>
+  <h2>3. Select the name column</h2>
   <select id="nameColumn">
     <option value="">-- choose column --</option>
   </select>
 </div>
 
-<!-- Step 3: Filter columns -->
+<!-- Step 4: Filter columns -->
 <div class="card hidden" id="filterCard">
-  <h2>3. Select filter columns</h2>
+  <h2>4. Select filter columns</h2>
   <div class="checkbox-list" id="filterColumns"></div>
   <div id="filterDropdowns"></div>
 </div>
 
-<!-- Step 4: Result -->
+<!-- Step 5: Result -->
 <div class="card hidden" id="resultCard">
-  <h2>4. Filtered name</h2>
+  <h2>5. Filtered name</h2>
   <input type="text" id="resultBar" readonly value="">
   <div class="status" id="matchStatus"></div>
 </div>
 
-<!-- Step 5: Folder + PNG -->
-<div class="card hidden" id="folderCard">
-  <h2>5. Folder &amp; PNG</h2>
+<!-- Step 6: PNG -->
+<div class="card hidden" id="pngCard">
+  <h2>6. PNG preview &amp; export</h2>
   <div class="row">
-    <div>
-      <label>Parent folder (contains one subfolder per name)</label>
-      <input type="text" id="folderPath" readonly placeholder="No folder selected — browsers require picking it via the button">
-    </div>
-    <div style="flex: 0 0 auto;">
-      <button id="pickFolder">Choose folder…</button>
-      <input type="file" id="folderFallback" webkitdirectory class="hidden">
-    </div>
-  </div>
-  <div class="status" id="folderStatus"></div>
-
-  <div class="row" style="margin-top: 14px;">
     <div>
       <label for="pngSelect">PNG files in matched subfolder</label>
       <select id="pngSelect" disabled>
@@ -171,8 +177,7 @@ let filterSelections = {};      // colIdx -> selected value ("" = any)
 let matchedName = null;         // raw matched name (single row)
 let cleanedName = null;         // matched name with quotes removed
 
-let dirHandle = null;           // File System Access API handle (preferred)
-let fallbackFiles = null;       // FileList from webkitdirectory fallback
+let rootDirEntry = null;        // FileSystemDirectoryEntry from drag & drop
 let currentPngs = [];           // [{name, getBlob: async () => Blob}]
 let currentBlobUrl = null;
 
@@ -182,6 +187,10 @@ const $ = id => document.getElementById(id);
 function setStatus(el, msg, cls) {
   el.textContent = msg;
   el.className = "status" + (cls ? " " + cls : "");
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 // Proper CSV parser: handles quoted fields, embedded commas, escaped quotes, CRLF
@@ -223,7 +232,60 @@ function matchingRows(excludeColIdx) {
   );
 }
 
-// ---------- step 1: CSV load ----------
+// ---------- step 1: folder via drag & drop (no picker dialog) ----------
+const dropZone = $("dropZone");
+
+["dragover", "dragenter"].forEach(ev =>
+  dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  })
+);
+["dragleave", "dragend"].forEach(ev =>
+  dropZone.addEventListener(ev, () => dropZone.classList.remove("dragover"))
+);
+
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+
+  let dirEntry = null;
+  for (const item of e.dataTransfer.items) {
+    const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+    if (entry && entry.isDirectory) { dirEntry = entry; break; }
+  }
+  if (!dirEntry) {
+    setStatus($("folderStatus"), "That was not a folder — drop a folder, not a file.", "error");
+    return;
+  }
+  rootDirEntry = dirEntry;
+  dropZone.textContent = "Folder: " + dirEntry.name + "  (drop another folder to replace)";
+  dropZone.classList.add("set");
+  setStatus($("folderStatus"), 'Folder "' + dirEntry.name + '" ready.', "ok");
+  $("csvCard").classList.remove("hidden");
+  scanFolder(); // re-scan in case a name is already matched
+});
+
+// Read ALL entries of a directory (readEntries returns batches of <=100)
+function readAllEntries(dirEntry) {
+  const reader = dirEntry.createReader();
+  return new Promise((resolve, reject) => {
+    const all = [];
+    (function next() {
+      reader.readEntries(batch => {
+        if (!batch.length) return resolve(all);
+        all.push(...batch);
+        next();
+      }, reject);
+    })();
+  });
+}
+
+function entryToBlob(fileEntry) {
+  return new Promise((resolve, reject) => fileEntry.file(resolve, reject));
+}
+
+// ---------- step 2: CSV load ----------
 $("csvFile").addEventListener("change", async e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -237,7 +299,7 @@ $("csvFile").addEventListener("change", async e => {
       while (padded.length < headers.length) padded.push("");
       return padded.map(v => v.trim());
     });
-    setStatus($("csvStatus"), `Loaded "${file.name}" — ${rows.length} rows, ${headers.length} columns.`, "ok");
+    setStatus($("csvStatus"), 'Loaded "' + file.name + '" — ' + rows.length + " rows, " + headers.length + " columns.", "ok");
     resetAfterCsv();
   } catch (err) {
     setStatus($("csvStatus"), "Failed to parse CSV: " + err.message, "error");
@@ -252,21 +314,17 @@ function resetAfterCsv() {
 
   const nameSel = $("nameColumn");
   nameSel.innerHTML = '<option value="">-- choose column --</option>' +
-    headers.map((h, i) => `<option value="${i}">${escapeHtml(h)}</option>`).join("");
+    headers.map((h, i) => '<option value="' + i + '">' + escapeHtml(h) + "</option>").join("");
 
   $("nameCard").classList.remove("hidden");
   $("filterCard").classList.add("hidden");
   $("resultCard").classList.add("hidden");
-  $("folderCard").classList.add("hidden");
+  $("pngCard").classList.add("hidden");
   $("filterColumns").innerHTML = "";
   $("filterDropdowns").innerHTML = "";
 }
 
-function escapeHtml(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-// ---------- step 2: name column ----------
+// ---------- step 3: name column ----------
 $("nameColumn").addEventListener("change", e => {
   nameColIdx = e.target.value === "" ? -1 : Number(e.target.value);
   filterColIdxs = [];
@@ -282,7 +340,7 @@ $("nameColumn").addEventListener("change", e => {
   const box = $("filterColumns");
   box.innerHTML = headers.map((h, i) =>
     i === nameColIdx ? "" :
-    `<label><input type="checkbox" data-col="${i}"> ${escapeHtml(h)}</label>`
+    '<label><input type="checkbox" data-col="' + i + '"> ' + escapeHtml(h) + "</label>"
   ).join("");
   box.querySelectorAll("input[type=checkbox]").forEach(cb =>
     cb.addEventListener("change", onFilterColumnsChanged)
@@ -294,7 +352,7 @@ $("nameColumn").addEventListener("change", e => {
   updateResult();
 });
 
-// ---------- step 3: filter columns + cascading dropdowns ----------
+// ---------- step 4: filter columns + cascading dropdowns ----------
 function onFilterColumnsChanged() {
   filterColIdxs = [...$("filterColumns").querySelectorAll("input:checked")]
     .map(cb => Number(cb.dataset.col));
@@ -334,7 +392,7 @@ function refreshDropdownOptions() {
     const possible = [...new Set(matchingRows(ci).map(r => r[ci]))].sort();
     const current = filterSelections[ci] || "";
     sel.innerHTML = '<option value="">-- any --</option>' +
-      possible.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      possible.map(v => '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + "</option>").join("");
     if (possible.includes(current)) {
       sel.value = current;
     } else {
@@ -344,7 +402,7 @@ function refreshDropdownOptions() {
   });
 }
 
-// ---------- step 4: result ----------
+// ---------- step 5: result ----------
 function updateResult() {
   const bar = $("resultBar");
   const matched = matchingRows(null);
@@ -355,86 +413,40 @@ function updateResult() {
     cleanedName = stripQuotes(matchedName);
     bar.value = matchedName;
     bar.classList.add("matched");
-    setStatus(status, `Exactly 1 row matched. Folder lookup name: "${cleanedName}"`, "ok");
-    $("folderCard").classList.remove("hidden");
+    setStatus(status, 'Exactly 1 row matched. Folder lookup name: "' + cleanedName + '"', "ok");
+    $("pngCard").classList.remove("hidden");
     scanFolder();
   } else {
     matchedName = cleanedName = null;
-    bar.value = matched.length === 0 ? "No rows match" : `${matched.length} rows match — keep filtering`;
+    bar.value = matched.length === 0 ? "No rows match" : matched.length + " rows match — keep filtering";
     bar.classList.remove("matched");
     setStatus(status, "Narrow the filters until exactly one row remains.");
     clearPngUI("Waiting for a single matched name.");
   }
 }
 
-// ---------- step 5: folder + PNGs ----------
-$("pickFolder").addEventListener("click", async () => {
-  if (window.showDirectoryPicker) {
-    try {
-      dirHandle = await window.showDirectoryPicker();
-      fallbackFiles = null;
-      $("folderPath").value = dirHandle.name;
-      setStatus($("folderStatus"), `Folder "${dirHandle.name}" selected.`, "ok");
-      scanFolder();
-    } catch (err) {
-      if (err.name !== "AbortError") setStatus($("folderStatus"), "Folder pick failed: " + err.message, "error");
-    }
-  } else {
-    // Fallback for browsers without the File System Access API
-    $("folderFallback").click();
-  }
-});
-
-$("folderFallback").addEventListener("change", e => {
-  fallbackFiles = e.target.files;
-  dirHandle = null;
-  if (fallbackFiles.length) {
-    const root = fallbackFiles[0].webkitRelativePath.split("/")[0];
-    $("folderPath").value = root;
-    setStatus($("folderStatus"), `Folder "${root}" loaded (${fallbackFiles.length} files scanned).`, "ok");
-  }
-  scanFolder();
-});
-
+// ---------- step 6: PNGs ----------
 async function scanFolder() {
-  if (!cleanedName) return;
-  if (!dirHandle && !fallbackFiles) {
-    clearPngUI("Choose the parent folder to look up the matched subfolder.");
-    return;
-  }
+  if (!cleanedName || !rootDirEntry) return;
 
   currentPngs = [];
   try {
-    if (dirHandle) {
-      // Find subfolder matching the cleaned name (exact first, then case-insensitive)
-      let sub = null;
-      for await (const [name, handle] of dirHandle.entries()) {
-        if (handle.kind !== "directory") continue;
-        if (name === cleanedName) { sub = handle; break; }
-        if (!sub && name.toLowerCase() === cleanedName.toLowerCase()) sub = handle;
-      }
-      if (!sub) {
-        clearPngUI(`No subfolder named "${cleanedName}" found in "${dirHandle.name}".`, true);
-        return;
-      }
-      for await (const [name, handle] of sub.entries()) {
-        if (handle.kind === "file" && /\.png$/i.test(name)) {
-          currentPngs.push({ name, getBlob: () => handle.getFile() });
-        }
-      }
-    } else {
-      // webkitdirectory fallback: match on path segment
-      const target = cleanedName.toLowerCase();
-      for (const f of fallbackFiles) {
-        const parts = f.webkitRelativePath.split("/");
-        // parts[0] = picked root; look for the named folder as a direct child
-        if (parts.length >= 3 && parts[1].toLowerCase() === target && /\.png$/i.test(f.name)) {
-          currentPngs.push({ name: f.name, getBlob: async () => f });
-        }
-      }
-      if (!currentPngs.length) {
-        clearPngUI(`No subfolder "${cleanedName}" with PNG files found under the selected folder.`, true);
-        return;
+    // Find subfolder matching the cleaned name (exact first, then case-insensitive)
+    const entries = await readAllEntries(rootDirEntry);
+    let sub = null;
+    for (const entry of entries) {
+      if (!entry.isDirectory) continue;
+      if (entry.name === cleanedName) { sub = entry; break; }
+      if (!sub && entry.name.toLowerCase() === cleanedName.toLowerCase()) sub = entry;
+    }
+    if (!sub) {
+      clearPngUI('No subfolder named "' + cleanedName + '" found in "' + rootDirEntry.name + '".', true);
+      return;
+    }
+    const subEntries = await readAllEntries(sub);
+    for (const entry of subEntries) {
+      if (entry.isFile && /\.png$/i.test(entry.name)) {
+        currentPngs.push({ name: entry.name, getBlob: () => entryToBlob(entry) });
       }
     }
   } catch (err) {
@@ -443,16 +455,16 @@ async function scanFolder() {
   }
 
   if (!currentPngs.length) {
-    clearPngUI(`Subfolder "${cleanedName}" contains no PNG files.`, true);
+    clearPngUI('Subfolder "' + cleanedName + '" contains no PNG files.', true);
     return;
   }
 
   currentPngs.sort((a, b) => a.name.localeCompare(b.name));
   const sel = $("pngSelect");
-  sel.innerHTML = currentPngs.map((p, i) => `<option value="${i}">${escapeHtml(p.name)}</option>`).join("");
+  sel.innerHTML = currentPngs.map((p, i) => '<option value="' + i + '">' + escapeHtml(p.name) + "</option>").join("");
   sel.disabled = false;
   $("exportPng").disabled = false;
-  setStatus($("pngStatus"), `${currentPngs.length} PNG file(s) found in "${cleanedName}".`, "ok");
+  setStatus($("pngStatus"), currentPngs.length + ' PNG file(s) found in "' + cleanedName + '".', "ok");
   showPng(0);
 }
 
@@ -481,7 +493,7 @@ $("exportPng").addEventListener("click", async () => {
     const blob = await entry.getBlob();
     const baseName = entry.name.replace(/\.png$/i, "");
     // Exported name = filtered name + original png name
-    const exportName = `${cleanedName}_${baseName}.png`;
+    const exportName = cleanedName + "_" + baseName + ".png";
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -490,7 +502,7 @@ $("exportPng").addEventListener("click", async () => {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
-    setStatus($("pngStatus"), `Exported as "${exportName}".`, "ok");
+    setStatus($("pngStatus"), 'Exported as "' + exportName + '".', "ok");
   } catch (err) {
     setStatus($("pngStatus"), "Export failed: " + err.message, "error");
   }

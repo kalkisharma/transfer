@@ -470,15 +470,39 @@ async function scanFolder() {
 
 $("pngSelect").addEventListener("change", e => showPng(Number(e.target.value)));
 
+// Some locked-down environments block blob: URLs ("URI supplied to the API was
+// malformed..." errors). Data URLs via FileReader work there as a fallback.
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(fr.error || new Error("FileReader failed"));
+    fr.readAsDataURL(blob);
+  });
+}
+
 async function showPng(idx) {
   const entry = currentPngs[idx];
   if (!entry) return;
+  const img = $("pngPreview");
   try {
     const blob = await entry.getBlob();
-    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-    currentBlobUrl = URL.createObjectURL(blob);
-    const img = $("pngPreview");
-    img.src = currentBlobUrl;
+    let src = null;
+    try {
+      if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+      currentBlobUrl = URL.createObjectURL(blob);
+      src = currentBlobUrl;
+      // If the blob: URL is blocked at load time, retry once as a data URL
+      img.onerror = async () => {
+        img.onerror = null;
+        try { img.src = await blobToDataUrl(blob); }
+        catch (e) { setStatus($("pngStatus"), "Could not display PNG: " + e.message, "error"); }
+      };
+    } catch (e) {
+      img.onerror = null;
+      src = await blobToDataUrl(blob);
+    }
+    img.src = src;
     img.style.display = "block";
   } catch (err) {
     setStatus($("pngStatus"), "Could not display PNG: " + err.message, "error");
@@ -494,14 +518,16 @@ $("exportPng").addEventListener("click", async () => {
     const baseName = entry.name.replace(/\.png$/i, "");
     // Exported name = filtered name + original png name
     const exportName = cleanedName + "_" + baseName + ".png";
-    const url = URL.createObjectURL(blob);
+    let url, isBlobUrl = false;
+    try { url = URL.createObjectURL(blob); isBlobUrl = true; }
+    catch (e) { url = await blobToDataUrl(blob); }
     const a = document.createElement("a");
     a.href = url;
     a.download = exportName;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    if (isBlobUrl) setTimeout(() => URL.revokeObjectURL(url), 5000);
     setStatus($("pngStatus"), 'Exported as "' + exportName + '".', "ok");
   } catch (err) {
     setStatus($("pngStatus"), "Export failed: " + err.message, "error");

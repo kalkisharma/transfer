@@ -1,0 +1,192 @@
+{
+  "units": "foot",
+  "extents": "39.4 × 32.8 × 10.6 ft",
+  "components": [
+    {
+      "name": "flaps",
+      "file": "stls/flaps.stl",
+      "parent": null,
+      "specs": [
+        {
+          "label": "Length (X)",
+          "value": "2.86 ft"
+        },
+        {
+          "label": "Width (Y)",
+          "value": "21.65 ft"
+        },
+        {
+          "label": "Height (Z)",
+          "value": "1.04 ft"
+        },
+        {
+          "label": "Wetted area",
+          "value": "48.4 ft²"
+        },
+        {
+          "label": "Volume",
+          "value": "3.71 ft³"
+        },
+        {
+          "label": "Triangles",
+          "value": "600"
+        }
+      ]
+    },
+    {
+      "name": "fuselage",
+      "file": "stls/fuselage.stl",
+      "parent": null,
+      "specs": [
+        {
+          "label": "Length (X)",
+          "value": "39.37 ft"
+        },
+        {
+          "label": "Width (Y)",
+          "value": "4.92 ft"
+        },
+        {
+          "label": "Height (Z)",
+          "value": "5.41 ft"
+        },
+        {
+          "label": "Wetted area",
+          "value": "537.7 ft²"
+        },
+        {
+          "label": "Volume",
+          "value": "608.13 ft³"
+        },
+        {
+          "label": "Triangles",
+          "value": "2,624"
+        }
+      ]
+    },
+    {
+      "name": "htail",
+      "file": "stls/htail.stl",
+      "parent": null,
+      "specs": [
+        {
+          "label": "Length (X)",
+          "value": "4.16 ft"
+        },
+        {
+          "label": "Width (Y)",
+          "value": "12.47 ft"
+        },
+        {
+          "label": "Height (Z)",
+          "value": "0.33 ft"
+        },
+        {
+          "label": "Wetted area",
+          "value": "64.2 ft²"
+        },
+        {
+          "label": "Volume",
+          "value": "5.36 ft³"
+        },
+        {
+          "label": "Triangles",
+          "value": "2,212"
+        }
+      ]
+    },
+    {
+      "name": "rudder",
+      "file": "stls/rudder.stl",
+      "parent": null,
+      "specs": [
+        {
+          "label": "Length (X)",
+          "value": "9.10 ft"
+        },
+        {
+          "label": "Width (Y)",
+          "value": "0.71 ft"
+        },
+        {
+          "label": "Height (Z)",
+          "value": "7.87 ft"
+        },
+        {
+          "label": "Wetted area",
+          "value": "75.4 ft²"
+        },
+        {
+          "label": "Volume",
+          "value": "13.15 ft³"
+        },
+        {
+          "label": "Triangles",
+          "value": "1,106"
+        }
+      ]
+    },
+    {
+      "name": "slats",
+      "file": "stls/slats.stl",
+      "parent": null,
+      "specs": [
+        {
+          "label": "Length (X)",
+          "value": "3.51 ft"
+        },
+        {
+          "label": "Width (Y)",
+          "value": "31.50 ft"
+        },
+        {
+          "label": "Height (Z)",
+          "value": "1.34 ft"
+        },
+        {
+          "label": "Wetted area",
+          "value": "33.0 ft²"
+        },
+        {
+          "label": "Volume",
+          "value": "2.72 ft³"
+        },
+        {
+          "label": "Triangles",
+          "value": "532"
+        }
+      ]
+    },
+    {
+      "name": "wing",
+      "file": "stls/wing.stl",
+      "parent": null,
+      "specs": [
+        {
+          "label": "Length (X)",
+          "value": "6.69 ft"
+        },
+        {
+          "label": "Width (Y)",
+          "value": "32.81 ft"
+        },
+        {
+          "label": "Height (Z)",
+          "value": "1.89 ft"
+        },
+        {
+          "label": "Wetted area",
+          "value": "259.5 ft²"
+        },
+        {
+          "label": "Volume",
+          "value": "40.33 ft³"
+        },
+        {
+          "label": "Triangles",
+          "value": "2,844"
+        }
+      ]
+    }
+  ]
+}

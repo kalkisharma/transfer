@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aircraft Geometry Viewer</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!--
+    Three.js is pulled straight from a CDN as an ES module.  The import map
+    lets the js/ modules write `import * as THREE from 'three'` exactly as they
+    would under a bundler, so nothing has to change if this ever grows one.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div class="app">
+    <canvas id="viewport" class="viewport"></canvas>
+
+    <header class="panel panel--header">
+      <h1 class="title">Aircraft Geometry</h1>
+      <p class="subtitle" id="summary">Loading manifest</p>
+    </header>
+
+    <aside class="panel panel--components" aria-label="Loaded components">
+      <h2 class="panel__heading">Components</h2>
+      <ul class="tree" id="tree"></ul>
+    </aside>
+
+    <!-- Leader line and anchor dot, drawn under the tooltip box. The SVG
+         spans the viewport so its coordinates are plain screen pixels. -->
+    <svg class="leader" id="leader" aria-hidden="true" hidden>
+      <line class="leader__line" x1="0" y1="0" x2="0" y2="0" />
+      <circle class="leader__dot" cx="0" cy="0" r="3.5" />
+    </svg>
+
+    <div class="tooltip" id="tooltip" role="dialog" aria-label="Component specifications" hidden>
+      <h2 class="tooltip__name" id="tooltip-name"></h2>
+      <dl class="tooltip__specs" id="tooltip-specs"></dl>
+    </div>
+
+    <p class="status" id="status" role="status"></p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

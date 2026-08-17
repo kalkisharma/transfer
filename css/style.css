@@ -1,0 +1,284 @@
+/* Dark engineering-tool palette: neutral greys, one accent, no gradients. */
+
+:root {
+  --bg: #101215;
+  --panel: rgba(24, 27, 32, 0.88);
+  --panel-solid: #181b20;
+  --border: #2a2f37;
+  --text: #d8dce1;
+  --text-muted: #838d98;
+  --accent: #4d90d9;
+
+  --radius: 10px;
+  --pad: 18px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+          Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas,
+               "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+}
+
+/* The canvas fills the window; every panel floats above it. */
+.viewport {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+/* ------------------------------------------------------------------ panels */
+
+.panel {
+  position: absolute;
+  padding: var(--pad);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.panel--header {
+  top: 20px;
+  left: 20px;
+  min-width: 260px;
+}
+
+.panel--components {
+  top: 132px;
+  left: 20px;
+  min-width: 260px;
+  max-height: calc(100% - 172px);
+  overflow-y: auto;
+}
+
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.panel__heading {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* -------------------------------------------------------------- component tree */
+
+.tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Nesting is driven by the manifest's `parent` field, so the indent rule has
+   to survive arbitrary depth rather than assuming two levels. */
+.tree .tree {
+  margin-top: 2px;
+  padding-left: 14px;
+  border-left: 1px solid var(--border);
+}
+
+.tree__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+
+.tree__label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+/* Swatch ties each outliner row to its colour in the 3D view. */
+.tree__swatch {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--text-muted);
+}
+
+.tree__name {
+  color: var(--text);
+}
+
+.tree__count {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------- tooltip */
+
+/* Positioned every frame from JS, so it has no top/left of its own: the
+   transform is the single source of truth for where it sits. */
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 208px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.tooltip[hidden],
+.leader[hidden] {
+  display: none;
+}
+
+.tooltip__name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+/* The dot is coloured from the component's own material, set inline by JS. */
+.tooltip__swatch {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.tooltip__specs {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 5px 24px;
+  margin: 0;
+}
+
+.tooltip__label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.tooltip__value {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.tooltip__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.leader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.leader__line {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.leader__dot {
+  fill: var(--accent);
+}
+
+/* ------------------------------------------------------------------ status */
+
+.status {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  margin: 0;
+  padding: 8px 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.status--visible {
+  opacity: 1;
+}
+
+.status--error {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+/* Thin scrollbars keep the tool look on long component lists. */
+.panel--components::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel--components::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}

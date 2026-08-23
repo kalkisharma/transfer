@@ -1,0 +1,189 @@
+# Tab Structure and Header Bar for the Training Guide
+
+Context for the file we're working on. The tab you've been building —
+Architecture and Data Flow — is one tab in a larger training guide. Here's the
+full structure it belongs to.
+
+**Keep building Architecture and Data Flow as we have been.** The only change is
+where it sits: under Orientation. Everything below is scaffolding to put around
+it.
+
+---
+
+## Background
+
+I'm running a training series teaching my team agentic coding — using the Codex
+CLI and Claude Code routed through my company's internal AI gateway. Sessions run
+~45 minutes. This HTML file is the reference guide people follow live and keep
+afterward.
+
+There are enough tabs that a flat list is overwhelming, so they're grouped into
+three sections: **Orientation**, **Setup**, **Implementation**.
+
+The course has a **through-line**: every participant builds their own small
+application across Implementation, and the series ends in a **group showcase**
+where each person demos what they built. Implementation tabs should keep pointing
+at that.
+
+---
+
+## The structure
+
+Do not number the tabs anywhere in the UI — the section grouping carries the
+ordering.
+
+### Orientation
+
+- **Welcome to Agentic Coding**
+- **LLM Basics**
+- **Agentic Coding as a Team**
+- **Architecture and Data Flow** ← the tab we're building
+
+### Setup
+
+- **Installing CLIs**
+- **Configuring CLIs**
+
+### Implementation
+
+- **Context Files and Guardrails**
+- **Coding with the Agent**
+- **Working with Git**
+- **Build Phase**
+- **GitLab: Sharing Your Repo**
+- **Showcase**
+
+---
+
+## Header bar
+
+Add a header bar across the top of the page, above the tab rail, with two jobs.
+
+**Identity.** The guide's title on the left, so it reads as a document rather
+than a loose page. Keep it short.
+
+**Section navigation.** The three sections — Orientation, Setup, Implementation —
+as the top-level control. Selecting a section shows its tabs in the rail below.
+The current section is clearly marked; the others are visibly available.
+
+Two levels of navigation, in other words: sections in the header, tabs in the
+rail. Someone should be able to tell at a glance both where they are and how much
+of the course remains.
+
+Constraints:
+
+- Self-contained. No CDN, no external fonts or scripts — this runs offline from
+  local disk.
+- Consistent with the existing visual language of the file. Don't introduce a
+  parallel style system.
+- Readable at projector distance. This gets screen-shared in sessions.
+- The header should not dominate. It's orientation, not the content.
+
+If a detail here is ambiguous, ask rather than guessing.
+
+---
+
+## Content briefs
+
+Enough to build placeholders with real structure. **Ask before inventing
+specifics** — especially anything about my company's systems, policies, or team.
+Placeholders should have headings and shape, not fabricated content.
+
+### Welcome to Agentic Coding
+
+The hook. What these tools actually do, shown rather than described. Sets
+expectations for the series: this is not autocomplete, and it rewards people who
+can *specify* work clearly. Also carries the roadmap and the showcase date, since
+this is the tab people land on first.
+
+### LLM Basics
+
+Enough mental model to use the tools well and not be surprised by them. Tokens,
+context windows, why the model has no memory between sessions, why it's
+confidently wrong sometimes. Worked through a chat interface everyone already has
+access to — no install required to follow along.
+
+### Agentic Coding as a Team
+
+How we coordinate so we don't build five versions of the same thing.
+
+The mechanism: a **shared spreadsheet** for intake — idea, what it does, who
+submitted it. Deliberately a spreadsheet and not a Git repo, because during
+collection the barrier to contributing has to be near zero. A repo is the
+eventual destination, not the on-ramp.
+
+Then **voting**, each person getting a limited budget of three to five votes. The
+limit is the point — unlimited votes means everything ranks equally. Vote totals
+establish priority. Difficulty gets assessed after, then ideas get owners.
+
+Also: before ranking, check whether a thing already exists, internally or
+commercially. Cheapest possible filter.
+
+### Architecture and Data Flow
+
+The tab in progress. Content unchanged — only its placement.
+
+### Installing CLIs
+
+Getting the CLIs onto a machine. Environments vary — a Windows workstation versus
+Linux HPC clusters — and the clusters have no outbound internet, so artifacts get
+downloaded on the workstation and copied over.
+
+### Configuring CLIs
+
+Deliberately separate from installation, because configuration is what actually
+breaks. Auth against the internal gateway, config files, proxy environment
+variables, and verifying the setup works before moving on.
+
+### Context Files and Guardrails
+
+`AGENTS.md` and `CLAUDE.md` — what they are, how they're structured, how to write
+instructions that land.
+
+Paired with this, and the reason it comes first in Implementation: **rules for
+working with real data.** Which files are safe to let an agent read, what never
+goes in a prompt, what stays on the cluster. I have the actual guidelines — this
+tab quotes them rather than paraphrasing. Ask me for the language.
+
+One distinction the tab must make explicitly: a line in `AGENTS.md` is an
+*instruction to a model*, not enforcement. Real boundaries come from sandbox and
+approval settings in the config file. Easy thing for this audience to get wrong.
+
+### Coding with the Agent
+
+Day-to-day practice. Scoping a task, prompting, reviewing output, iterating.
+Knowing when *not* to reach for the agent — a check with a yes-or-no answer and no
+judgment involved should be a script, not a prompt.
+
+### Working with Git
+
+Taught on the app they've already been building, not abstractly. They'll have
+uncommitted changes they care about, which is the only circumstance in which Git
+makes sense to anyone.
+
+Local only. Remotes deliberately come later — say so out loud, because people will
+want to push to a remote the same day they learn `git commit`.
+
+### Build Phase
+
+The through-line app takes shape. Less new material, more working sessions.
+
+### GitLab: Sharing Your Repo
+
+Remotes, SSH keys, pushing. Once local Git is muscle memory.
+
+### Showcase
+
+Each person demos what they built. Set the date early and keep referencing it.
+
+---
+
+## What I want right now
+
+Build the header bar and the tab rail to match the above — three sections, tabs
+grouped under them, no numbering. Create placeholder tabs for everything not yet
+written, using the briefs for headings and structure only.
+
+**Architecture and Data Flow keeps its current content.**
+
+Confirm the structure back to me before writing any tab content.

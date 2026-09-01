@@ -1,0 +1,23 @@
+We're continuing work on the frontend/ SPA in this repo. Before writing any code, read the current frontend/server.py, frontend/README.md, and package.json so you have context, then tell me your plan.
+
+Working rules — follow these strictly:
+- Do ONE step at a time. After each step, stop, summarize what you changed, and wait for me to confirm before moving on.
+- Commit after every step, with a clear message. Never bundle two steps into one commit.
+- Don't add dependencies without telling me first. Don't touch src/. Save all files UTF-8 without BOM.
+- If anything is ambiguous, ask me before coding.
+
+The work, in order:
+
+1. Generic data blueprint.
+   Create frontend/blueprints/data.py defining a Flask Blueprint. Move the existing /api/rcas logic into one generic route /api/data that reads query params tool (default "rcas") and path (optional). If tool == "rcas", call the RCAS parser exactly as server.py does now; for any other tool, return 400 with a clear message. Return JSON shaped as columns, data, units, and a nested metadata object with source (the tool name), path, and date_generated (current time). Then in server.py: remove the old /api/rcas route, import and register this blueprint, leave /api/health as is.
+
+2. README fixes.
+   The two run sections are mislabeled — relabel them PowerShell and Bash (not Mac/Linux). The Bash section is missing the build steps (cd frontend, npm run build, cd ..) that PowerShell has — add them. Then add a new section for backend engineers explaining they only need Python and Flask, write one blueprint file in frontend/blueprints/, and test it with curl — no Node, npm, or Vite.
+
+3. Frontend v1.
+   In App.jsx, add a path text input, a tool dropdown (only rcas for now), and a Load button that fetches /api/data with those params and renders the returned columns/rows as a table, plus the units and metadata.
+
+4. Plotting.
+   Add react-plotly.js and plotly.js (confirm with me first). Add two dropdowns to pick X and Y columns from the loaded data, and render an interactive Plotly line chart below the table.
+
+Start by confirming the plan and the order, then do step 1 only.

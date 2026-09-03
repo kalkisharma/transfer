@@ -1,0 +1,216 @@
+# GPR Teaching Session — Prompt Script for GPT-OSS
+
+A step-by-step prompt sequence for pair-learning Gaussian Process Regression using a SISO airfoil example (α → CL). Assumes Python + scikit-learn in a notebook.
+
+**How to run the session:** the learner types the prompts, not you. Your job is the "what to check" column — that's where the teaching happens.
+
+---
+
+## Priming prompt (send once, first)
+
+> You are helping me learn Gaussian Process Regression step by step. I will ask for one step at a time. Rules: (1) do only the step I ask for, do not jump ahead; (2) give runnable scikit-learn code plus a short explanation of only the theory needed for that code; (3) if I ask a conceptual question, answer with no code. Confirm you understand, then wait.
+
+**Why:** open-weight models love to dump a complete end-to-end GPR script on the first message. This holds it back. Expect to re-send a shortened version of this if it drifts around step 5–6.
+
+---
+
+## Step 1 — Define the data
+
+**Prompt:**
+> Generate a synthetic airfoil lift-curve dataset for me. Write a function CL(α) with these properties: linear with slope about 0.11 per degree through α = 0, CL,max of about 1.5 near α = 16°, and a drop to about 0.95 by α = 20° (post-stall). Use a smooth blend, not a piecewise if-statement. Sample it at 16 points from -6° to 20°, denser near stall than in the linear region, and add Gaussian noise with σ = 0.015. Fix the random seed. Return numpy arrays shaped correctly for scikit-learn. Print the resulting α and CL values. Nothing else yet.
+
+**What you should get:** a generator function (usually a tanh or logistic blend between a linear term and a post-stall decay), `X` of shape (16, 1), `y` of shape (16,).
+
+**Check with the learner:**
+- Why is `X` 2D and `y` 1D? (n_samples × n_features convention — a single input is still a column.)
+- Have them eyeball the printed CL values against the spec before moving on. A wrong dataset here poisons every later step, and it's a two-second check.
+- The noise term is deliberate — it's what makes `WhiteKernel` do something real in Step 8.
+- Keep the generator function around. In Step 11 you can overlay the true curve against the GP mean, which is a much stronger visual than test points alone.
+
+**Model failure mode:** the usual misses are a purely linear curve with no stall, a stall that's a hard `np.where` discontinuity, or uniform spacing despite being asked for denser sampling near stall. If it produces junk, tell it what's wrong and let the learner watch you debug the prompt — that's a real skill you're also there to teach.
+
+---
+
+## Step 2 — Visualize the data
+
+**Prompt:**
+> Plot CL versus α as a scatter plot. Just the plot.
+
+**What you should get:** a scatter showing a linear region to ~12°, curvature to CL,max near 16°, then post-stall drop.
+
+**Check with the learner:**
+- Ask them to describe the function *before* any modeling: "is this smooth? is it smooth in the same way everywhere?"
+- Plant the seed: the linear region and the stall region have very different characteristic length scales. Don't explain length scale yet — just get them to notice.
+
+---
+
+## Step 3 — Split the data
+
+**Prompt:**
+> Split into training and test sets using train_test_split with a fixed random seed. Show me which α values ended up in each set.
+
+**What you should get:** a random split, probably 75/25.
+
+**Check with the learner:**
+- Where did the test points land? If a test point is at α = 20° and it's not in training, they're now testing **extrapolation**, not interpolation. GP behavior there is completely different.
+- Discuss: with 16 points, a random split is noisy. Re-run with a couple of seeds and watch the metrics swing. Good moment to talk about why small-data surrogate validation is hard.
+- Optional: have them force α = -6 and 20 into training so the first pass is pure interpolation.
+
+**Model failure mode:** may suggest `stratify=y`, which is classification-only. If it does, that's a teachable catch.
+
+---
+
+## Step 4 — Scale the input
+
+**Prompt:**
+> Scale X using StandardScaler. Explain why GPR needs this. Do not scale y.
+
+**What you should get:** scaler fit on **training data only**, then applied to test.
+
+**Check with the learner:**
+- Did it fit the scaler on the full dataset? That's leakage. Very common model error — check it every time.
+- Why scaling matters here specifically: the RBF kernel measures distance in input space. Unscaled, a "length scale of 1" means 1 degree; scaled, it means 1 standard deviation of α. The optimizer's default bounds (1e-5, 1e5) are much better behaved in scaled units.
+- Note for later: after this, learned length scales are in **scaled units**. They'll need to convert back to degrees to interpret them physically.
+
+---
+
+## Step 5 — Kernel, conceptually (no code)
+
+**Prompt:**
+> Conceptually and with no code: what does a kernel do in a Gaussian process? Explain it in terms of how two input points relate to each other.
+
+**What you should get:** kernel = covariance function; it says how correlated the *function values* are at two inputs, based on their separation.
+
+**Check with the learner:**
+- Push on the key idea: a GP is a distribution over functions, and the kernel is the entire assumption about what those functions look like. The kernel *is* the model.
+- Concrete: α = 5° and 5.5° → strongly correlated. α = 5° and 30° → nearly independent.
+- Ask: "if two points are strongly correlated, what does that mean for the prediction at one when I observe the other?"
+
+**Model failure mode:** may drift into SVM kernel-trick language. Related but a different framing — redirect to covariance.
+
+---
+
+## Step 6 — Select the RBF kernel
+
+**Prompt:**
+> Write the RBF / squared-exponential kernel formula and explain each term. Then show me how to construct it in scikit-learn. Do not fit anything yet.
+
+**What you should get:** k(x, x′) = σ² exp(−‖x − x′‖² / 2ℓ²), and `ConstantKernel() * RBF()`.
+
+**Check with the learner:**
+- Two hyperparameters, not one: signal variance σ² (vertical scale) and length scale ℓ (horizontal scale). People fixate on ℓ and forget σ².
+- The RBF assumes infinitely differentiable functions — extremely smooth. Ask whether that's a reasonable assumption for a lift curve through stall. (It isn't, really. Matérn 5/2 is often the better default for engineering data. Park this — worth revisiting at the end.)
+
+---
+
+## Step 7 — Length scale intuition
+
+**Prompt:**
+> Plot the RBF kernel value versus distance between two points, for length scales of 0.1, 0.5, 1.0, and 2.0, on one figure. No GP fitting.
+
+**What you should get:** four decaying curves.
+
+**Check with the learner:** this is the highest-value plot in the whole session. Make them read it out loud:
+- Small ℓ → correlation dies fast → only immediate neighbors inform a prediction → wiggly fits, uncertainty grows quickly between points.
+- Large ℓ → correlation persists → distant points inform predictions → smooth, stiff fits.
+- Ask them to predict: "for our lift curve, do you expect the optimizer to land on a big or small length scale? What will that mean for the stall region?"
+
+---
+
+## Step 8 — Initialize hyperparameters
+
+**Prompt:**
+> Build a GaussianProcessRegressor with a ConstantKernel × RBF kernel plus a WhiteKernel for noise. Set explicit initial values and bounds for each hyperparameter. Explain what the bounds do. Do not fit yet.
+
+**What you should get:** something like `C(1.0, (1e-3, 1e3)) * RBF(1.0, (1e-2, 1e2)) + WhiteKernel(1e-5, (1e-10, 1e1))`.
+
+**Check with the learner:**
+- **The core distinction from the doc:** we choose the model *structure* (which kernels, how combined, what bounds). The data chooses the *values*. Make sure they can state this back.
+- What bounds actually do: they constrain the optimizer. Too tight and you'll get a "close to the specified bound" warning; too loose and the optimizer can wander into degenerate solutions.
+- `WhiteKernel` vs the `alpha` argument: both add noise/jitter, but `alpha` is fixed and `WhiteKernel` is *learned*. Ask the model to explain the difference — good check on whether it actually knows sklearn.
+
+---
+
+## Step 9 — Optimize the hyperparameters
+
+**Prompt:**
+> Fit the GP on the training data. Print the initial kernel, the optimized kernel, and the log marginal likelihood. Explain what quantity is being maximized.
+
+**What you should get:** `gp.fit(X_train_scaled, y_train)`, then `gp.kernel_` (fitted, trailing underscore) vs `gp.kernel` (initial).
+
+**Check with the learner:**
+- What's maximized: the log marginal likelihood — how probable the observed training data is under the GP. Not squared error.
+- The LML surface is non-convex. Add `n_restarts_optimizer=10` and show that the answer can change. Ask why that matters for a surrogate you'd hand to a program.
+- Convert the learned ℓ back to degrees. Does it match their guess from Step 7? Is it physically sensible relative to the width of the stall break?
+
+**Model failure mode:** confusing `kernel` and `kernel_` is a frequent one, and it silently gives you the wrong (unoptimized) values.
+
+---
+
+## Step 10 — Make predictions
+
+**Prompt:**
+> Predict CL at a dense grid of α from -8 to 22 degrees. Return both the predictive mean and the standard deviation. Show me the code and print a few values.
+
+**What you should get:** `gp.predict(X_grid_scaled, return_std=True)`.
+
+**Check with the learner:**
+- The grid must go through the **same scaler** — `scaler.transform`, not `fit_transform`. Check this.
+- Two outputs, and the second is the point of using a GP at all. A neural net or polynomial fit gives you the first only.
+- Ask: what does the std represent — noise in the data, or ignorance about the function? (Both, depending on whether you asked for the noise term back. Worth a minute.)
+
+---
+
+## Step 11 — Visualize the result
+
+**Prompt:**
+> Plot on one figure: training points, test points, the GP mean prediction across the grid, and a shaded ±2σ confidence band.
+
+**What you should get:** the canonical GP plot.
+
+**Check with the learner:**
+- Where is the band narrow? Where is it wide? Why?
+- Look at α > 20° and α < -6°: the mean reverts toward the prior (≈ 0, or the data mean if `normalize_y=True`) and the band flares. That's the GP saying "I have no idea out here" — and it's the single best argument for GPs over polynomial surrogates in an aero context.
+- Look at the stall region. If the RBF landed on one global length scale, the fit is probably slightly too stiff through the break and slightly too wiggly in the linear region. That's the nonstationarity problem from Step 2, now visible.
+
+---
+
+## Step 12 — Evaluate
+
+**Prompt:**
+> Evaluate the model against the held-out test points using R² and RMSE. Then also compute what fraction of the test points fall inside the ±2σ interval.
+
+**What you should get:** metrics, plus the coverage fraction.
+
+**Check with the learner:**
+- The coverage check is the one nobody does and the one that matters. If ~95% of held-out points fall inside the 95% interval, the uncertainty estimate is honest. If far fewer, the GP is overconfident and its error bars can't be trusted downstream.
+- With only 4 test points the coverage number is nearly meaningless. Say so out loud — it's a good lesson about small-sample validation.
+
+---
+
+## Step 13 — Remove data and study uncertainty
+
+**Prompt:**
+> Retrain the same GP three times: (a) on the full training set, (b) with all training points between α = 8° and 16° removed, (c) with only 4 training points total. Plot all three with their confidence bands, side by side.
+
+**What you should get:** three panels showing progressively wider uncertainty.
+
+**Check with the learner — this is the payoff step:**
+- In the gap, the band swells and the mean sags toward the prior. Ask them to relate the *width* of the swell to the learned length scale.
+- Case (c): with 4 points the optimizer will likely pick a large ℓ and produce a confidently wrong smooth fit through the stall. Confident and wrong is more dangerous than uncertain — good closing point.
+- Tie it back: this is exactly the argument for adaptive sampling / expected improvement when choosing where to run the next CFD case.
+
+---
+
+## Follow-ups if there's time
+
+- Swap RBF → `Matern(nu=2.5)` and re-run. Which fits the stall break better, and why?
+- Set `normalize_y=True` and observe what the extrapolation mean reverts to.
+- Add 2% noise to CL and watch what the `WhiteKernel` learns.
+
+## Watch-outs with an open-weight model
+
+- It will try to give you the whole script early. Re-prime it.
+- It mixes scikit-learn with GPy / GPflow / GPyTorch syntax. If an API call looks unfamiliar, check the docs rather than trusting it.
+- It may hallucinate attribute names (`gp.length_scale_` doesn't exist; you want `gp.kernel_.k2.length_scale` or similar). Have the learner print `gp.kernel_` and read the actual structure.
+- Every wrong answer it gives is a teaching opportunity. Let the learner find the error before you point at it.

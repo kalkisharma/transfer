@@ -1,23 +1,120 @@
-We're continuing work on the frontend/ SPA in this repo. Before writing any code, read the current frontend/server.py, frontend/README.md, and package.json so you have context, then tell me your plan.
+# Gateway Capture Test Repo — Build Brief
 
-Working rules — follow these strictly:
-- Do ONE step at a time. After each step, stop, summarize what you changed, and wait for me to confirm before moving on.
-- Commit after every step, with a clear message. Never bundle two steps into one commit.
-- Don't add dependencies without telling me first. Don't touch src/. Save all files UTF-8 without BOM.
-- If anything is ambiguous, ask me before coding.
+## Context
 
-The work, in order:
+This is a standalone test repo, separate from the Hangar project. Its job is to
+capture real request/reply traffic from Lockheed's Genesis gateway, which
+Hangar's "oracle" component needs before it can finish building its model
+adapter. Nothing here needs to match Hangar's code — it just needs to produce
+raw, faithful captures that get handed back separately.
 
-1. Generic data blueprint.
-   Create frontend/blueprints/data.py defining a Flask Blueprint. Move the existing /api/rcas logic into one generic route /api/data that reads query params tool (default "rcas") and path (optional). If tool == "rcas", call the RCAS parser exactly as server.py does now; for any other tool, return 400 with a clear message. Return JSON shaped as columns, data, units, and a nested metadata object with source (the tool name), path, and date_generated (current time). Then in server.py: remove the old /api/rcas route, import and register this blueprint, leave /api/health as is.
+**Build one piece at a time.** After each piece below, stop and let me test it
+before moving to the next. Don't combine steps or get ahead of what's been
+verified working.
 
-2. README fixes.
-   The two run sections are mislabeled — relabel them PowerShell and Bash (not Mac/Linux). The Bash section is missing the build steps (cd frontend, npm run build, cd ..) that PowerShell has — add them. Then add a new section for backend engineers explaining they only need Python and Flask, write one blueprint file in frontend/blueprints/, and test it with curl — no Node, npm, or Vite.
+## Background the session should know
 
-3. Frontend v1.
-   In App.jsx, add a path text input, a tool dropdown (only rcas for now), and a Load button that fetches /api/data with those params and renders the returned columns/rows as a table, plus the units and metadata.
+- Genesis gateway has two paths:
+  - `/v1` — OpenAI-style Responses API. Used for GPT-OSS-120b (on-prem, free)
+    via `model_provider=aifactory`, and also hosts external models like
+    Terra 5.6 on the same endpoint.
+  - `/api/anthropic` — native Anthropic Messages API format. Used for Claude
+    models.
+- On-prem vs. external is a property of the *model*, not the endpoint — the US
+  endpoint hosts both on-prem and external models.
+- Cache-related usage fields differ by path:
+  - `/v1` path: `cached_input_tokens`, `cache_write_input_tokens`
+  - `/api/anthropic` path: `cache_creation_input_tokens`, `cache_read_input_tokens`
+- Credentials come from the shell environment already set up on this machine
+  (same pattern as existing Codex/Claude CLI aliases) — no credential handling
+  needs to be built here.
 
-4. Plotting.
-   Add react-plotly.js and plotly.js (confirm with me first). Add two dropdowns to pick X and Y columns from the loaded data, and render an interactive Plotly line chart below the table.
+## What "done" looks like, overall
 
-Start by confirming the plan and the order, then do step 1 only.
+A set of captured exchanges, saved as plain files, covering:
+1. GPT-OSS-120b (on-prem) — full tool-call chain
+2. Terra 5.6 (external, same US endpoint) — full tool-call chain
+3. Claude (via `/api/anthropic`) — full tool-call chain
+4. At least one reply in the set showing cache activity in usage data
+
+Each captured exchange must preserve, exactly as sent/received:
+- Method and path
+- Every header (auth token replaced with an obvious placeholder, but left in
+  its original header position)
+- Body, byte-for-byte, no reformatting or key reordering
+- Response status line and headers
+- Whether the response was streamed/chunked
+
+No predefined file format is required — a plain directory of files is fine,
+one exchange per file or request/reply as a pair. Keep the tool-call sequence
+reconstructable as an ordered chain, not just loose files.
+
+## Build order (one step at a time)
+
+### Step 1 — Raw HTTP client, single call, GPT-OSS-120b
+Build a minimal script that sends one hand-built request to `/v1` for
+GPT-OSS-120b (on-prem, free to iterate on) and saves the raw request and raw
+response to disk, unmodified except for token redaction. No tool calling yet
+— just prove the raw send/save mechanics work end to end.
+
+**Stop here for testing.**
+
+### Step 2 — Add a forced tool call, GPT-OSS-120b
+Extend Step 1's script so the request forces a tool call (e.g. a simple file
+listing tool). Capture the model's tool-call request. Don't send a tool result
+back yet — just confirm the tool-call request itself is captured correctly.
+
+**Stop here for testing.**
+
+### Step 3 — Complete the chain, GPT-OSS-120b
+Add sending a fabricated tool result back to the model and capturing its final
+reply. This completes a full request → tool-call → tool-result → final-reply
+chain for GPT-OSS-120b.
+
+**Stop here for testing.**
+
+### Step 4 — Point the same client at Terra 5.6
+Reuse Step 3's chain-driving logic, but target Terra 5.6 (external model, same
+`/v1` endpoint, same US gateway). Capture the same kind of chain. Compare the
+reply shape against GPT-OSS-120b's — specifically checking for any
+cost/billing-related fields that weren't present in the on-prem reply.
+
+**Stop here for testing.**
+
+### Step 5 — Raw HTTP client for Claude path
+Build a new raw client (separate from the `/v1` one, since the wire format is
+different) targeting `/api/anthropic`. Start with a single call, no tool
+calling yet, same save-raw-exactly-as-is approach as Step 1.
+
+**Stop here for testing.**
+
+### Step 6 — Full tool-call chain, Claude path
+Extend Step 5 to run the same request → tool-call → tool-result → final-reply
+sequence as Steps 2–3, on the Claude path this time. This is the path with
+weaker prior evidence, so expect surprises here more than on the GPT-OSS side.
+
+**Stop here for testing.**
+
+### Step 7 — Confirm cache-activity coverage
+Review the captured set from Steps 1–6. Confirm at least one reply shows
+nonzero cache-related usage fields (either path). If none do, figure out what
+triggers cache activity (e.g. a repeated/similar prompt) and capture one that
+does.
+
+**Stop here for testing.**
+
+### Step 8 — Pricing data (separate, lower priority)
+Only after the above is solid: look at whatever Genesis webpage lists models
+and prices. Try scraping its HTML/DOM directly first. Only fall back to
+screenshot + vision-model extraction if the page has no usable structured
+data. Either way, write output to a separate data file — not into any
+oracle/Hangar code file directly — and flag any model-read values for manual
+review before trusting them.
+
+## What NOT to do
+
+- Don't build a fixture loader or try to match Hangar's expected format —
+  that doesn't exist yet by design; Hangar's coordinator builds the loader
+  after seeing what this repo produces.
+- Don't redact anything beyond the auth token.
+- Don't reformat or "clean up" captured JSON — save it exactly as received.

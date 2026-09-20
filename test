@@ -1,1 +1,26 @@
-Please capture the cache-warm plus changed-suffix pair for global native Anthropic, covering both Opus and Sonnet, the same recipe already used for US native Anthropic. This completes proof that prefix-caching works on both endpoints, not just US. This is a one-time validation, save the raw request and response captures the same way as before, triplet format with request pretty text, response pretty text, and capture json. No repeated runs needed once this is done.
+Please provide the complete published price table for Phase 4.4.
+
+  Needed paid model/gateway pairs:
+
+  - gpt-5.6-terra — US and Global
+  - gpt-5.6-luna — US and Global
+  - claude-opus-4-8 — US and Global
+  - claude-sonnet-5 — US and Global
+
+  For every pair, provide:
+
+  - Currency
+  - Input rate
+  - Output rate
+  - Cache-read rate
+
+  Also provide:
+
+  - Terra and Luna: cache-write rate for both the standard and >272K-
+  input tiers.
+  - Opus and Sonnet: separate 5-minute and 1-hour cache-write rates.
+
+  `gpt-oss-120b` on US is deliberately on-prem and unpriced; confirm
+  it should be represented as “no published price,” not zero.
+
+  Do not provide internal gateway addresses or capture data.

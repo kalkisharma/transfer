@@ -1,26 +1,20 @@
-Please provide the complete published price table for Phase 4.4.
+Relay this. It answers its question and sets the order of checks.
 
-  Needed paid model/gateway pairs:
+---
 
-  - gpt-5.6-terra — US and Global
-  - gpt-5.6-luna — US and Global
-  - claude-opus-4-8 — US and Global
-  - claude-sonnet-5 — US and Global
+**Answer to your question:** Yes, the spinner opening is meant to be an inlet by design. It's the circular opening behind the spinner, and flow is supposed to enter there and exit through the nacelle. At cruise it's reversed.
 
-  For every pair, provide:
+**Run on the current solution, no re-run, in this order:**
+1. Area-averaged static pressure on the spinner opening, versus the pressure just inside the nacelle behind it and p∞.
+2. Scalar scene of normal velocity on the opening, to check whether it's all outflow or mixed.
+3. Fan volume flow and Δp on both fan interfaces ("Fan In" and "Fan In 2"). Also say which exit each fan feeds.
+4. Mass flow on the Inboard and Outboard belly inlets separately, and through HX 1 and HX 2 separately.
+5. Whether the 44.76 lbf includes the Static Interface face as an exit term, and whether the sign convention matches across inlet and exit reports.
+6. Internal connectivity: which regions and interfaces link the spinner opening to the HX cores and the fan. Is it one shared volume, or is the spinner path separate?
+7. Whether the spinner opening sits inside the VDM disk region, and what the tangential velocity is there.
 
-  - Currency
-  - Input rate
-  - Output rate
-  - Cache-read rate
+**One correction to your momentum reasoning:** flow leaving the spinner opening forward does not have zero momentum recovery. It has x-momentum opposite the freestream, so it adds drag beyond the ram drag paid at the inlets. Report J_spinner with its sign, not just its magnitude.
 
-  Also provide:
+---
 
-  - Terra and Luna: cache-write rate for both the standard and >272K-
-  input tiers.
-  - Opus and Sonnet: separate 5-minute and 1-hour cache-write rates.
-
-  `gpt-oss-120b` on US is deliberately on-prem and unpriced; confirm
-  it should be represented as “no published price,” not zero.
-
-  Do not provide internal gateway addresses or capture data.
+I'd expect items 1, 3 and 6 to settle whether the fan is pressurizing the cavity and pushing flow out the spinner. Bring those numbers back and we can go from there.

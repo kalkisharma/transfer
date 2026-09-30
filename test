@@ -1,20 +1,36 @@
-Relay this. It answers its question and sets the order of checks.
+Context update from a parallel review. Please read fully, then reply with (a) what you agree or disagree with and (b) the results for the checks listed at the end.
 
----
+SETUP
+Tilt-wing nacelle, cruise 250 kt (V∞ = 421.95 ft/s), 8000 ft. Two belly inlets (Inboard, Outboard) feed HX 1 and HX 2. Forward spinner opening ("Static Interface LHS", bell-shaped face behind the prop hub) is designed as an inlet. One internal cavity is shared by the spinner opening, the belly inlets, the HX cores, and the fan. There is one fan, a radial annulus (fictitious fan, ~1700 CFM target), feeding an oval exhaust. Gap around the fan: there is a bypass region near the exhaust where fan outflow hits a high-pressure region and can re-enter around the fan. No interface exists on that gap.
 
-**Answer to your question:** Yes, the spinner opening is meant to be an inlet by design. It's the circular opening behind the spinner, and flow is supposed to enter there and exit through the nacelle. At cruise it's reversed.
+NUMBERS IN HAND
+- Inlets: Inboard 1.645 lb/s, Outboard 1.684 lb/s, total 3.329 lb/s. About 1652 CFM each. About 21 lbf ram drag each, total 43.66 lbf.
+- Spinner opening: -2.435 lb/s (outflow), -2519 CFM, area 7.487 ft2, momentum drag 1.586 lbf.
+- Fan: 1.698 lb/s, 1743.5 CFM, dp = 6.946 in.wg.
+- Nacelle Outlet: 0.894 lb/s net. Mass balance closes: 3.329 - 2.435 = 0.894.
+- Total momentum drag 44.76 lbf.
 
-**Run on the current solution, no re-run, in this order:**
-1. Area-averaged static pressure on the spinner opening, versus the pressure just inside the nacelle behind it and p∞.
-2. Scalar scene of normal velocity on the opening, to check whether it's all outflow or mixed.
-3. Fan volume flow and Δp on both fan interfaces ("Fan In" and "Fan In 2"). Also say which exit each fan feeds.
-4. Mass flow on the Inboard and Outboard belly inlets separately, and through HX 1 and HX 2 separately.
-5. Whether the 44.76 lbf includes the Static Interface face as an exit term, and whether the sign convention matches across inlet and exit reports.
-6. Internal connectivity: which regions and interfaces link the spinner opening to the HX cores and the fan. Is it one shared volume, or is the spinner path separate?
-7. Whether the spinner opening sits inside the VDM disk region, and what the tangential velocity is there.
+OUR CURRENT UNDERSTANDING
+1. Momentum budget: D = m_in*V∞ - J_spinner - J_outlet. The spinner exits forward, so J_spinner is negative and adds drag (+1.586 lbf). If 44.76 includes both exit terms, then J_outlet is about +0.49 lbf (from 43.66 + 1.586 - 44.76). Please verify this.
+2. Exit velocities are far below freestream. Momentum-weighted effective exit velocity is about 21 ft/s at the spinner (1.586 lbf x 32.174 / 2.435) and about 17 ft/s at the outlet. V∞ is 422 ft/s. So no face can produce net thrust. The fan's dp of 6.9 in.wg cannot accelerate flow past V∞.
+3. Drag is dominated by captured mass flow times V∞ (about 13.1 lbf per lb/s). This replaces our earlier claim that rerouting spinner flow out the exhaust would recover significant thrust. That was overstated. Per unit mass, the spinner path costs roughly m(V∞+21) and the exhaust path about m(V∞-17), a difference of roughly 9%.
+4. The main lever is capturing less air. The inlets capture 3.329 lb/s, but the fan only moves 1.698 lb/s, and net throughput to the exhaust is 0.894 lb/s. If the spinner is sealed and the fan stays at about 1700 CFM, the inlets should capture LESS, not more. Ram drag could fall to roughly 12-22 lbf, depending on how much fan recirculation remains. Earlier we suggested inlet CFM would rise after sealing. That was wrong.
+5. The spinner mean normal velocity from CFM/area is only about 5.6 ft/s, but the momentum implies about 21 ft/s. This suggests nonuniform or mixed in/out flow on the face, which the net -2.435 lb/s hides.
+6. Fan recirculation hypothesis: fan 1.698 - net outlet 0.894 = 0.804 lb/s recirculating through the bypass around the fan. This would close the mass balance. It could also be an artifact of the fixed-flow fictitious fan. Unverified.
 
-**One correction to your momentum reasoning:** flow leaving the spinner opening forward does not have zero momentum recovery. It has x-momentum opposite the freestream, so it adds drag beyond the ram drag paid at the inlets. Report J_spinner with its sign, not just its magnitude.
+OPEN CONFLICT TO RESOLVE
+The user reported "exhaust 1694 CFM", which is about 1.65-1.7 lb/s at this density. That matches the fan flow, not the 0.894 lb/s outlet mass flow. Confirm which face the 1694 CFM refers to, and whether the outlet mass flow and volume flow are consistent.
 
----
+CHECKS, in this order, on the current solution
+1. Gross inflow and outflow on the spinner opening (scalar scene of normal velocity) to see whether the flow is mixed.
+2. J_spinner and J_outlet separately, with signs. Confirm the 44.76 lbf composition and sign convention.
+3. The 1694 CFM vs 0.894 lb/s conflict above.
+4. Fan: confirm whether "Fan In" and "Fan In 2" are two faces of one fan (user says one fan) and whether the 1.698 lb/s and 6.946 in.wg are summed across them.
+5. HX 1 and HX 2 mass flow separately. Does recirculated flow re-enter upstream or downstream of the HX cores?
+6. Area-averaged static pressure on the spinner face vs just inside the cavity and p∞. Rescale the Ps plot to about +/-30 in.wg.
+7. Is the spinner face inside the VDM disk region, and what is the swirl velocity there? The reversal may partly be a VDM artifact.
 
-I'd expect items 1, 3 and 6 to settle whether the fan is pressurizing the cavity and pushing flow out the spinner. Bring those numbers back and we can go from there.
+PROPOSED EXPERIMENTS after the checks, not before
+A. Wall the spinner opening and rerun. Watch total inlet capture, momentum drag, fan dp, and net outlet flow.
+B. Separately, close the fan bypass gap. Watch fan dp and net outlet flow.
+Do not change anything yet. Report findings first.

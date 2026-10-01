@@ -1,42 +1,30 @@
-Here's the full prompt, ready to send as-is.
-
-Here's the full coordinator prompt:
+Here's the draft — report-only, no changes:
 
 ---
 
-# Checkpoint 4.12 — proper app testing — rulings from Kalki, 2026-09-30/10-01
+**To: presentation-prep agent (not the coordinator)**
 
-Five open questions from the voice-handoff brief are now resolved. 4.12 can be scoped and tasked.
+**Do not make any changes. Investigate and report back only — no file edits, no config changes, no new decks created, nothing committed. This is reconnaissance for a live demo today; I'll decide what to do with the answers before anything is touched.**
 
-## Rulings
+I'm running the live demo as several instances of the app, each pre-staged at a different step of the same walkthrough, so none of them sit there live computing during the talk. Likely four instances:
 
-1. **Ordering and how 4.12 opens.** The cost fix (caching bug) goes first — it's actively costing money on every message today. After that, tasks go straight from the approved item list below; no separate Oracle-plans-then-Kalki-reviews step this time, unlike 4.11's pattern.
+1. Fresh/empty — for the opening visual.
+2. A deck freshly imported with seeded errors, ready to run Review live.
+3. Review already run and its findings already relayed to Chat, ready to show Chat proposing changes.
+4. Chat's proposed edit already generated, sitting at the accept-the-diff step, ready to click accept live.
 
-2. **Response token limit.** Raised to 50,000 tokens, applied uniformly across Chat and Review and across all models for now — not split by purpose or model at this stage. Explicitly provisional: revisit at checkpoint 4.13 once real usage data exists.
+All instances run from one workspace, pointed at different deck files, not separate workspaces.
 
-3. **Composer behavior on failed send.** If a send fails, the typed text is restored to the composer rather than lost — a deliberate reversal of the 4.5 ruling that cleared the composer unconditionally on send. Flag it as an intentional change, not an oversight.
+**What I need reported back:**
 
-4. **"Never push" wording.** Clean up the written rules so they consistently say the project never pushes, matching the actual standing rule. Wording only — no behavior change.
+1. **How to launch multiple instances of the app simultaneously on different ports.** Today it looks like the app is hardcoded to a single port. Report exactly how to override the port at launch (a flag, an env var, a config field — whatever actually exists in the code) so I can run several instances side by side without them colliding. Don't change anything — just tell me how.
 
-5. **Favicon / pane-collapse animation.** Confirmed already correctly scoped into 4.12's item list under Renderer — no new ruling needed, just confirming they stay in.
+2. **A clean, organized, step-by-step checklist for setting up this four-instance staged demo** — one workspace, each instance pointed at a different deck, each one launched at the right port, each one pre-advanced to its designated stage. I want this as something I can literally follow by hand before the talk, not something that requires you to run it for me.
 
-## Full 4.12 item list (brief + rulings above, consolidated)
+3. **What's actually involved in preparing each deck variant** — the error-seeded deck for instance 2, the deck with Review already run and findings already relayed for instance 3, and the deck with Chat's edit already proposed and sitting at accept for instance 4. Report what state each of those requires and what steps would produce it, but don't produce them yourself yet.
 
-- Cost fix: resolve the caching bug (every Chat message writes the whole ~53,600-token deck to cache and reads nothing back, ~2x the cost of no caching). **Goes first.**
-- Response token limit: raised to 50,000 tokens uniformly (ruling 2).
-- RCAS lookup menu: give Chat and Review the lookup menu phase 4 designed for them; today only the debug harness has it.
-- Truthfulness in the UI: show the response limit, mark a cut-off answer clearly, distinguish "model not found" from a real login/token failure.
-- Chat comfort: usage/cost behind an icon; local markdown rendering in Chat's prose (built locally, no raw HTML passed through); composer-clear-on-send updated per ruling 3.
-- Ambiguous-edit handling: what happens when a proposed patch can't find enough matching text to apply cleanly. **Still open** — options on the table (ask for more surrounding text, retry within the question, have the proposal name a line number too), none chosen; left to Oracle to propose and bring back.
-- More models: expand beyond today's fixed table of five to whatever the gateways actually offer.
-- Look and feel: favicon (three blocks, one accent color, no gradients/thin strokes, legible at 16×16) and animated pane-collapse (ruling 5).
-- Chrome flakiness in the browser suite (Renderer).
-- Request timeout defect from 4.4 that currently limits nothing (Parser).
-
-## Note flagged to Oracle
-
-Raising the response limit to 50,000 tokens may increase real per-message cost if usage grows into that headroom — worth watching once this ships, so it doesn't quietly offset the caching fix's savings.
+Report back with findings only. I'll review and tell you what to actually build/run next.
 
 ---
 
-Saved to `/tmp/coordinator-prompt-4.12.md` as well if you want a copy. Want me to adjust anything before you send it?
+Want me to adjust anything — the instance count, the exact deck-variant descriptions, or add something about today's time pressure — before you send it?

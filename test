@@ -1,0 +1,47 @@
+Here's a self-contained prompt to hand to that agent — it has no context from this conversation, so I've written it to stand alone:
+
+---
+
+**Presentation prep — 30-minute team session, tomorrow (2026-10-01)**
+
+I need help organizing a presentation on Hangar and preparing the supporting materials/demos for it. This is a planning and prep session, not a request to implement new Hangar features — though some of what's below may require small scripts or test runs to produce evidence for the talk.
+
+**Context on the audience:** my aerodynamics group, introducing/updating them on Hangar.
+
+**The core thesis of the talk:** Hangar's value has two layers, and the presentation should prove them in order — foundation first, capability second — so the AI portion lands as trustworthy rather than needing to be taken on faith.
+
+1. **The deterministic foundation** (parser + IR) is what makes an AI pane safe to use at all. Without a verified, diagnostic-rich parsing layer, you'd have to trust an LLM's reading of a raw, undocumented, decades-old deck format — which is exactly the kind of brittle, exacting task LLMs are unreliable at. Hangar's design deliberately keeps the LLM away from raw parsing; it only ever operates on top of an already-verified layer.
+2. **The LLM pane** (Chat + Review) is powerful specifically because it's sandboxed by that deterministic layer — every edit it proposes gets validated against exact, rule-based code before a human accepts it.
+
+**Part 1 — Diagnostics comparison: GRCAS vs. Hangar**
+
+I want to stress-test and compare how GRCAS (RCAS running inside GRCAS, the graphical visualization tool) handles broken decks versus how Hangar's parser handles the same cases. Plan:
+
+- Step 1: Confirm the GRCAS/RCAS pipeline runs end to end on a known-good deck (baseline sanity check — can it visualize successfully at all).
+- Step 2: Run that same clean deck, then a broken deck, through GRCAS, and have an agent read the full resulting log end to end to learn its structure (one-time reconnaissance — how GRCAS signals/labels errors, whether there's a consistent format, severity markers, line references). Write up a short reference note on the log's format so future runs don't need a full re-read — just a targeted grep/keyword search (e.g. "error", "warning") going forward, to avoid wasting tokens re-parsing full logs every time.
+- Step 3: Pick specific broken-deck test cases, reusing Hangar's own existing documented/tested broken-deck scenarios rather than inventing new ones (e.g. missing `CORNODE` row, unrecognized `UNITSYSTEM` string, `UNITSYSTEM` present but empty, a stray token before an otherwise-valid row — these are documented with exact expected behavior in `schema-spec.md`, sections referenced there as §3.4, §10.6, §10.8, §10.13 as of the last time I reviewed them; check current state since this project is actively evolving). Run each through both GRCAS and Hangar. Extract what each one reports — does GRCAS give explicit, specific error information, or does it fail more silently/opaquely? Does Hangar's diagnostic output name the exact problem and location?
+- Deliverable: a comparison artifact (see "Final deliverable" below) showing, per test case, what GRCAS reported vs. what Hangar reported.
+
+**Part 2 — LLM pane demo, in three beats**
+
+1. **Review, pre-staged.** Load a clean deck. Separately (not through Chat's normal edit flow), have an agent deliberately inject a batch of errors into the deck text. Paste the corrupted version into Hangar's buffer. Run Review against that buffer live during the actual demo (this is the one live-generation moment in the demo — I may want to dry-run this once beforehand so I know roughly what Review will surface, without scripting the result). Review returns a ranked list of findings with severities.
+2. **Relay and fix.** Relay Review's findings into Chat's composer. Have Chat propose corrections for them. Walk through the diff/review-before-accept flow, accept the fixes.
+3. **External validation.** Run both the broken deck and the Chat-corrected deck through GRCAS: broken one fails, corrected one runs clean. This closes the loop — an external tool independently confirms Hangar's fix actually worked, not just Hangar's own diagnostics saying so.
+
+**Part 3 — Complex multi-hop edit demonstration**
+
+Separately from the error-injection demo above, I want to show Hangar/Chat making non-trivial edits that require multiple coordinated changes across a deck — specifically picking edit cases that are complex, span multiple locations, and are highly error-prone for a human to do by hand (not just "complex" in isolation). Two candidate examples to start from, pending review of whether they're good demo material:
+
+- Increasing blade resolution/count — likely touches `SINGLEBLADE`'s blade-count field, potentially `BLADECOMP` rows, azimuth spacing assumptions, and per-blade `PSORIENT` precone values if no longer uniform.
+- Adjusting coaxial rotor vertical stacking distance — coordinated `SSORIGIN` Z-value changes across multiple subsystems, with the Z-down convention making sign errors easy for a human.
+
+For each case, I want to capture: what I asked Hangar to do, what it did, a before/after (ideally a rendered Schematic snapshot or diff), how long it took (measured, real data), whether it was verified successfully in GRCAS (checkmark + GRCAS's own run/verification time), and optionally an honestly-labeled estimate of how long the same edit would take a human by hand (framed explicitly as an estimate or a range, not measured data — do not present it with the same rigor as the measured LLM time; if possible, get one real hand-timed data point by actually doing one edit manually, rather than only guessing).
+
+**Final deliverable — single HTML artifact, two tabs**
+
+- Tab 1: the GRCAS-vs-Hangar diagnostics comparison (Part 1) — test case, GRCAS's reported output, Hangar's reported output.
+- Tab 2: the complex-edit comparison table (Part 3) — modification requested, what Hangar did, before/after, time taken, GRCAS-verified checkmark + time, estimated human time (clearly labeled as an estimate).
+- Keep before/after visuals as small thumbnails so the table stays scannable.
+- Visually distinguish rows I'll demo live tomorrow from rows that are reference-only evidence, so if a live demo hiccups I still have the artifact as a fallback talking point.
+
+**What I need help with right now:** organizing this into a concrete presentation outline/runbook for a 30-minute session, and preparing/running the actual test cases and comparisons described above so the HTML artifact and demo materials are ready before tomorrow. I'll point you to the relevant files (`schema-spec.md`, `ir.md`, the current Hangar codebase, GRCAS access) once we start.

@@ -1,0 +1,75 @@
+I'll draft something concise that captures the structure and workflow:
+
+---
+
+**Weekly Reporting and Work Tracking Automation**
+
+**Goal:** Build a Genesis agent that runs daily (morning and afternoon) and weekly (Thursday) to help track work progress, align reporting with manager's style, and build understanding of work cadence over time.
+
+**Folder Structure** (all under `/weekly-reporting/`):
+```
+/reports/
+  /my-reports/          (Thursday outputs, ready for manager)
+  /manager-reports/     (weekly manager reports, converted to text)
+/logs/
+  /daily-weekly-logs/   (one file per week, organized by program with task status)
+  /extra-days/          (tracking work outside Mon-Thu schedule)
+/analysis/
+  /manager-analysis/    (manager's formatting noted once; writing style & patterns tracked)
+    - manager-writing-style.md
+    - manager-feedback-log.md (Kalki's corrections week-to-week)
+    - manager-edits-log.md (what portions of Kalki's reports made it into his, what changed)
+  /agent-learning/
+    - program-cadence.md (agent's evolving understanding of normal task duration per program)
+```
+
+**Three Core Sessions:**
+
+1. **Monday Morning Brief**
+   - Check: Is there a new manager report? If yes, extract from DOCX to text, store, analyze formatting once. Then update understanding of writing style, semantics, context.
+   - Check: Is Monday morning brief done?
+   - Workflow: Program by program, list existing tasks, update status, ask for new tasks per program, ask for new programs.
+   - Output: Updates to weekly log.
+
+2. **Daily Afternoon Wrap-up** (Mon-Thu)
+   - Driven by agent discretion, not comprehensive review
+   - Check tasks that should have progressed or been due today
+   - Flag stalled tasks based on agent's learned cadence for each program
+   - Ask: "Is there anything we missed or need to reassess?"
+   - Output: Updates to weekly log (tasks move through status columns, dates recorded).
+
+3. **Thursday Report Synthesis**
+   - Agent pulls from week's morning + afternoon logs
+   - Writes report styled to match manager's voice (using manager-analysis files)
+   - Kalki reviews, gives feedback (iterative, multi-round OK)
+   - Agent refines draft based on feedback, updates manager-feedback-log
+   - Final report stored in `/my-reports/` ready for manager to copy/paste into his compiled report
+   - Later: Kalki notes what portions made it into manager's report and what changed, logged in manager-edits-log.
+
+**Weekly Log Structure** (one file per week):
+- Organized by program
+- Columns: Task, Tasked Date, Started Date, Completed Date, Status (Planned/In Progress/Completed)
+- Agent updates this throughout the week as sessions happen
+- Empty date fields are OK if unknown
+
+**Learning Systems:**
+- Agent builds understanding of manager's writing style, tone, detail level, and information priorities—refines this weekly based on manager's new report + Kalki's feedback
+- Agent tracks normal task cadence per program—flags anomalies contextually (task idle longer than normal for that program)
+- Both learnings stored in `/analysis/` and evolved continuously
+
+**Off-schedule Days:**
+- If agent launches on Fri/Sat/Sun, it notes the day and asks if Kalki is actually working (output goes to `/extra-days/`)
+- Non-workday sessions don't feed into formal reporting
+
+**DOCX Handling:**
+- Agent extracts manager's DOCX to plain text/Markdown on first ingest (token efficiency)
+- Captures formatting/structure once, archives original, works from text thereafter
+- For images: agent can ask Kalki if assessment is needed, stores decision
+
+**What's Fixed vs. Iterative:**
+- Fixed: Folder structure, Mon/afternoon/Thursday cadence, weekly log format
+- Iterative: Agent's understanding of manager style, program cadence, and Kalki's feedback patterns
+
+---
+
+Does that capture what we discussed? Any adjustments before I clean it up?

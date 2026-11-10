@@ -1,3 +1,7 @@
-Go with recommendations, except #4: use the report's 1040 RPM (108.91 rad/s) for the 100% line, and update AGENTS.md. Keep the EA derivation and the chordwise sign flip flagged in the spec sheet and the final HTML.
+Good call not working around the license. I'll connect the dock and tell you when to rerun.
 
-Do step 2 (spec sheet), then step 3 (generate the RCAS deck). Commit after each. Stop before running RCAS and show me a summary.
+Meanwhile, do the license-free work:
+1. Build the HTML report generator for step 5 now, with placeholders for the fan plot and frequency table, so it fills in automatically once RCAS runs. Include property plots vs the source tables, the Fig. 26 image, and the provenance/assumptions section.
+2. Add a check to the run script that reads the RCAS log and fails loudly if the solver didn't actually solve, since rcasbatchrun exits 0 on failure.
+3. Prepare the NREL 5-MW case through step 3 (extract, spec sheet, deck) so the live demo only needs the run.
+Commit after each item, then stop.

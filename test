@@ -1,10 +1,1 @@
-Plot and report refinements for the HART II fan plot (apply to the shared report builder so NREL gets them too where relevant):
-
-1. Make the 100% rotor speed line bold and clearly labeled "Operating speed".
-2. Label each mode curve (1F, 1L, 2F, ...) at the right edge of the plot, in addition to the existing labels. Keep the nP labels from crowding.
-3. Keep the Fig. 26 image side by side for reference; the test points stay overlaid on the RCAS plot.
-4. Add a validation table at 0 RPM: each mode, RCAS frequency, Fig. 26 test value, and percent difference. Mark which modes have test data.
-5. Add a second table at 100% rotor speed: each mode's frequency in /rev and Hz, and its margin to the nearest nP line. Highlight any mode within 0.2 /rev of an nP line.
-6. Under the tables, add one line stating that test data is non-rotating only, so rotating results are compared to CAMRAD II curves visually.
-
-Commit, regenerate the HTML, then stop and summarize.
+Keep highlighting all nP lines within 0.2 /rev, but visually emphasize the blade-count bands (kN-1, kN, kN+1): 3/4/5P and 7/8/9P for HART II, and 2/3/4P and 5/6/7P for NREL. Add a note under the 100% table: "1F near 1P is inherent to hingeless rotors and expected." Commit and stop.

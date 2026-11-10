@@ -1,7 +1,10 @@
-Good call not working around the license. I'll connect the dock and tell you when to rerun.
+Plot and report refinements for the HART II fan plot (apply to the shared report builder so NREL gets them too where relevant):
 
-Meanwhile, do the license-free work:
-1. Build the HTML report generator for step 5 now, with placeholders for the fan plot and frequency table, so it fills in automatically once RCAS runs. Include property plots vs the source tables, the Fig. 26 image, and the provenance/assumptions section.
-2. Add a check to the run script that reads the RCAS log and fails loudly if the solver didn't actually solve, since rcasbatchrun exits 0 on failure.
-3. Prepare the NREL 5-MW case through step 3 (extract, spec sheet, deck) so the live demo only needs the run.
-Commit after each item, then stop.
+1. Make the 100% rotor speed line bold and clearly labeled "Operating speed".
+2. Label each mode curve (1F, 1L, 2F, ...) at the right edge of the plot, in addition to the existing labels. Keep the nP labels from crowding.
+3. Keep the Fig. 26 image side by side for reference; the test points stay overlaid on the RCAS plot.
+4. Add a validation table at 0 RPM: each mode, RCAS frequency, Fig. 26 test value, and percent difference. Mark which modes have test data.
+5. Add a second table at 100% rotor speed: each mode's frequency in /rev and Hz, and its margin to the nearest nP line. Highlight any mode within 0.2 /rev of an nP line.
+6. Under the tables, add one line stating that test data is non-rotating only, so rotating results are compared to CAMRAD II curves visually.
+
+Commit, regenerate the HTML, then stop and summarize.

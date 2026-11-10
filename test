@@ -1,20 +1,3 @@
-I'm preparing a demo for tomorrow for our rotor group, the team that builds RCAS input decks from blade data. The goal is to show an agent automating deck building and checking. All data is public.
+Go with recommendations, except #4: use the report's 1040 RPM (108.91 rad/s) for the 100% line, and update AGENTS.md. Keep the EA derivation and the chordwise sign flip flagged in the spec sheet and the final HTML.
 
-THE PIPELINE (we'll do it one step at a time)
-1. Extract blade structural tables from a published report
-2. Distill them into a clean blade spec sheet with units
-3. Generate an RCAS deck from the spec sheet
-4. Run a structural modal analysis in vacuum to produce a fan plot (no aero or wake model needed)
-5. Produce one self-contained HTML report
-
-Pre-built case: HART II rotor (4-blade hingeless, 40% Mach-scaled BO-105, R = 2 m, nominal 109.12 rad/s, -8 deg linear twist). Source: NASA/CR-2012-216039 (HART blade structural properties). Use the MEASURED properties, not the earlier estimates.
-Live demo case (later): NREL 5-MW reference wind turbine blade (NREL/TP-500-38060).
-
-RCAS knowledge: my context files are in <PATH_TO_RCAS_CONTEXT>. Read them before any RCAS work. Reference them by path; don't copy them.
-
-TASK NOW (setup + step 1 only)
-a. In this folder, create: refs/, data/hart2/, data/nrel5mw/, decks/, reports/. Run git init.
-b. Write AGENTS.md describing the pipeline above, the folder layout, the path to my RCAS context files, and these rules: one step at a time, commit after each step, always state units, and flag any value you're unsure of rather than guessing.
-c. Get the HART II report into refs/. If you can't download it, tell me and I'll place it there.
-d. Extract the spanwise structural tables (mass per length, flap/lag/torsion stiffness, CG and elastic axis offsets, inertias) into CSV in data/hart2/, with units and source page/table numbers.
-e. Show me a short summary of what you extracted and any gaps, then STOP so I can check it against the PDF before step 2.
+Do step 2 (spec sheet), then step 3 (generate the RCAS deck). Commit after each. Stop before running RCAS and show me a summary.

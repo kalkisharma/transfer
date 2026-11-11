@@ -1,19 +1,139 @@
-This repo has codex-setup-guide-offline.html: a self-contained setup guide
-for Codex CLI on LM Windows laptops (Git Bash). It must stay one file with
-inline CSS/JS, no CDN or web fonts, and no real credentials anywhere.
+AI Workflow Automation Show-and-Tell — Project Handoff
 
-How it works: users paste NTID, EFOSS token, Genesis US and Global tokens
-into step 2. Step 4 generates five downloads (combined.pem, tokens.txt,
-bashrc.txt, npmrc.txt, config.toml), and step 5 is one command that backs up
-existing files and moves them into ~ and ~/.codex. Tokens are never stored.
-The cert gets pasted into the <script type="text/plain" id="lm-cert"> block.
+I’m continuing work on an existing 12-slide engineering presentation called “Automating Your Engineering Workflow with AI.”
 
-Before changing anything, read the whole file. Then verify these against
-my real setup and report back; don't edit yet:
-1. The generated bashrc cert lines (NODE_EXTRA_CA_CERTS, SSL_CERT_FILE,
-   REQUESTS_CA_BUNDLE) vs. my ~/.bashrc.
-2. Whether the openai-organization header on the US provider breaks
-   gpt-oss-120b (it's there because the default model, gpt-5.6-terra, needs it).
-3. The newest Sol model name for the codex-sol alias (gpt-5.6-sol vs gpt-6-sol).
-4. That "codex -m X -c model_provider=aifactory_global" is valid on the
-   installed Codex version (check codex -h).
+Please read the attached project handoff document and inspect the refined PowerPoint and accompanying PDF before making changes.
+
+Background
+
+I’m Kalki Sharma, a senior aerospace engineer working in computational aerodynamics and CFD at Lockheed Martin.
+
+This is a monthly, informal show-and-tell presentation for approximately 40 engineers from different disciplines, including aerodynamics, thermal, propulsion, dynamics, space, and AI/ML.
+
+Important: This is a general engineering audience, not an aerospace-sciences-specific presentation.
+
+The goal isn’t to teach advanced AI theory. It’s to give engineers an approachable introduction to AI-assisted workflow automation, show practical examples, and encourage attendees to present their own workflows at future sessions.
+
+The desired tone is fun, conversational, technically credible, and accessible to people who aren’t AI experts.
+
+Presentation philosophy
+
+* Minimal text and strong visuals.
+* One primary idea per slide.
+* Engineering examples that work across disciplines.
+* Practical explanations rather than excessive jargon.
+* Clear distinction between AI-generated work and verified engineering results.
+* Speaker notes that provide enough detail for natural, confident delivery.
+
+Current presentation
+
+The deck has 12 slides, already professionally refined.
+
+Slides 1–2: Introduction
+
+Explain why this monthly series exists, introduce AI agents in approachable language, and establish that small workflow improvements are worth sharing.
+
+Slides 3–4: Context engineering
+
+Explain why providing the right instructions, reference documents, and working files improves an agent’s results.
+
+Use concrete engineering examples. Avoid suggesting that better context guarantees correctness.
+
+Slide 5: Prompt chaining
+
+Show a sequential engineering workflow:
+
+Test report → Extract data → Prepare inputs → Run analysis → Summary.
+
+Emphasize verification between steps.
+
+Slide 6: Orchestrator–workers
+
+Show specialized workers performing separate tasks such as checking analysis status, comparing measurements, tracking action items, and reviewing schedules.
+
+A coordinator combines their outputs into a weekly report.
+
+Explain the distinction between this pattern and sequential prompt chaining.
+
+Slide 7: Three practical habits
+
+Show a good example, reference relevant files, and begin with one small reliable automation chain.
+
+Slide 8: Engineering verification
+
+Emphasize reviewing assumptions, units, data sources, independent calculations, and trusted reference results.
+
+The engineer remains responsible for engineering judgment.
+
+Slide 9: Getting started
+
+Demonstration placeholder for an internal setup hub with an embedded chatbot.
+
+Slide 10: Engineering workflow
+
+Demonstration placeholder for a real program workflow, showing the previous process, automation, verification, and result.
+
+Slide 11: RCAS end to end
+
+Demonstration placeholder for an RCAS-related workflow. Confirm the actual software functionality before describing what the demo can do.
+
+Slide 12: Closing
+
+Encourage attendees to start small, have fun, ask for help, and present their own workflows.
+
+Upcoming topics include token efficiency, choosing the right model, and Git basics.
+
+Visual design
+
+The existing presentation uses a polished, flat design with a 16:9 format.
+
+Main colors:
+
+* Navy: #0E1A3A
+* Indigo: #1C2E6B
+* Orange: #FF7A30
+* Teal: #1FB5A8
+* Light background: #EEF2FB
+* Text: #16213E
+
+Font: Calibri, with Courier New for short technical examples.
+
+The deck uses dark opening and closing slides, rounded cards, circular icons, simple workflow diagrams, and very little decorative clutter.
+
+Preserve the existing visual system.
+
+Project files
+
+The refined PowerPoint is the current working master.
+
+The PDF contains the corresponding slide images and presenter notes.
+
+The original PowerPoint is available as a historical reference.
+
+The Python refinement script modifies the original PowerPoint to generate the refined version. The original build_deck.py generator has not yet been synchronized with the refinement changes.
+
+Avoid accidentally regenerating the outdated deck.
+
+Important decisions
+
+A professional review has already been completed. The narrative structure is good and should largely remain intact.
+
+We’ve deliberately broadened the technical examples from CFD-specific to general engineering.
+
+We’ve also improved the technical precision around agent capabilities, context, orchestration, verification, and data access.
+
+Do not undo these improvements.
+
+Do not fabricate internal program information, screenshots, measured benefits, or demonstrations. All internal content must be appropriate for the intended audience.
+
+What I need going forward
+
+Help me continue improving this existing deck, not rebuild it unnecessarily.
+
+Prioritize presentation clarity, narrative flow, technical accuracy, visual consistency, and natural speaker notes.
+
+The main unfinished task is completing slides 9–11 using actual demonstration material.
+
+When modifications are made, produce an editable PowerPoint and a corresponding PDF with speaker notes, and visually inspect the rendered slides.
+
+The overall goal is to make engineering colleagues feel that AI-assisted automation is practical, approachable, and something they can start experimenting with immediately.

@@ -1,14 +1,19 @@
-Create a ~10-slide PowerPoint (python-pptx) in reports/ for today's session with the rotor group (they build RCAS decks from blade data). Clean, simple style, minimal text, one idea per slide. Use headless screenshots of the HTML reports for the visuals. Pull facts only from this repo.
+This repo has codex-setup-guide-offline.html: a self-contained setup guide
+for Codex CLI on LM Windows laptops (Git Bash). It must stay one file with
+inline CSS/JS, no CDN or web fonts, and no real credentials anywhere.
 
-1. Title: Automating RCAS Deck Building with an AI Agent
-2. Why: deck building is manual, slow, and error-prone; exploratory demo, public data only
-3. The pipeline: report → tables → spec sheet → RCAS deck → RCAS run → HTML report (diagram)
-4. Source data: HART II blade (NASA/CR-2012-216039), 4-blade hingeless, R = 2 m, 1040 RPM; what was extracted
-5. What the agent caught in the source: swapped Table 13 labels, mixed measured/DEI data in Table 14, rotor speed discrepancy, other flags; and the assumptions we made (EA from kP, rigid hub to 0.07R, pitch spring 1706 N-m/rad)
-6. The generated deck: hub arm, pitch bearing with spring, 25 beam elements; RCAS validated the model
-7. Verification built in: the batch runner exits 0 even when the solver fails, so the agent reads the log; RCAS-omitted modes shown honestly rather than guessed
-8. Results: side-by-side fan plot (RCAS vs Fig. 26)
-9. Validation: 0 RPM table, all seven test modes within ~5%; 100% margins with blade-count bands highlighted
-10. Next steps: live NREL 5-MW run, your workflow and pain points, shared RCAS context file in GitLab, trying one of your decks
+How it works: users paste NTID, EFOSS token, Genesis US and Global tokens
+into step 2. Step 4 generates five downloads (combined.pem, tokens.txt,
+bashrc.txt, npmrc.txt, config.toml), and step 5 is one command that backs up
+existing files and moves them into ~ and ~/.codex. Tokens are never stored.
+The cert gets pasted into the <script type="text/plain" id="lm-cert"> block.
 
-Commit when done, then stop.
+Before changing anything, read the whole file. Then verify these against
+my real setup and report back; don't edit yet:
+1. The generated bashrc cert lines (NODE_EXTRA_CA_CERTS, SSL_CERT_FILE,
+   REQUESTS_CA_BUNDLE) vs. my ~/.bashrc.
+2. Whether the openai-organization header on the US provider breaks
+   gpt-oss-120b (it's there because the default model, gpt-5.6-terra, needs it).
+3. The newest Sol model name for the codex-sol alias (gpt-5.6-sol vs gpt-6-sol).
+4. That "codex -m X -c model_provider=aifactory_global" is valid on the
+   installed Codex version (check codex -h).

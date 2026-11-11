@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex CLI Windows Setup</title>
+<style>
+/* Layout: sticky step rail on the left, single reading column; rail folds to a top strip on narrow screens. System fonts only (offline, locked-down laptops). */
+:root {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --fg: #18202d;
+  --muted: #586579;
+  --rule: #d9dfe8;
+  --code-bg: #eaeef4;
+  --accent: #1d5ca6;
+  --accent-soft: #e2ecf8;
+  --warn: #8a5a00;
+  --warn-bg: #fdf3dc;
+  --warn-rule: #e8c36a;
+  --danger: #a32222;
+  --ok: #1d7a43;
+  --ok-bg: #e3f3e9;
+  --tip-bg: #1f2735;
+  --tip-fg: #eef2f7;
+  --font-body: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-head: "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-mono: "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --surface: #181d26; --fg: #e3e8ef; --muted: #9aa6b8; --rule: #2b3340;
+    --code-bg: #1e2531; --accent: #82b2ec; --accent-soft: #1d2a3d;
+    --warn: #f0c46a; --warn-bg: #2b2414; --warn-rule: #6e5520;
+    --danger: #f08b82; --ok: #6fcf97; --ok-bg: #16291e; --tip-bg: #e8edf4; --tip-fg: #151b24;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #181d26; --fg: #e3e8ef; --muted: #9aa6b8; --rule: #2b3340;
+  --code-bg: #1e2531; --accent: #82b2ec; --accent-soft: #1d2a3d;
+  --warn: #f0c46a; --warn-bg: #2b2414; --warn-rule: #6e5520;
+  --danger: #f08b82; --ok: #6fcf97; --ok-bg: #16291e; --tip-bg: #e8edf4; --tip-fg: #151b24;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, .tip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap {
+  display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px;
+  max-width: 1140px; margin: 0 auto;
+  padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 15px; }
+.rail h2 { font: 600 12px var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 10px; }
+.rail ol { list-style: none; margin: 0 0 24px; padding: 0; display: grid; gap: 2px; }
+.rail a { display: flex; gap: 10px; align-items: baseline; padding: 6px 10px; border-radius: 6px; text-decoration: none; color: var(--fg); }
+.rail a:hover { background: var(--accent-soft); }
+.rail .n { font-family: var(--font-mono); font-size: 13px; color: var(--muted); min-width: 1.6em; font-variant-numeric: tabular-nums; }
+.rail li.done a { color: var(--muted); }
+.rail li.done .n { color: var(--ok); }
+.progress { font-size: 14px; color: var(--muted); margin: 0 0 8px; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-bottom: 24px; }
+.bar span { display: block; height: 100%; width: 0; background: var(--ok); transition: width .25s; }
+
+main { min-width: 0; max-width: 800px; }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 600; text-wrap: balance; line-height: 1.25; }
+h1 { font-size: 2.1rem; margin: 0 0 8px; }
+.lede { color: var(--muted); font-size: 1.05rem; margin: 0 0 12px; max-width: 62ch; }
+.draft { display: inline-block; font-size: 13px; color: var(--warn); background: var(--warn-bg); border: 1px solid var(--warn-rule); border-radius: 99px; padding: 2px 12px; margin-bottom: 8px; }
+
+section.step { padding-top: 36px; margin-top: 36px; border-top: 1px solid var(--rule); scroll-margin-top: 16px; }
+section.step:first-of-type { border-top: 0; margin-top: 12px; }
+.step-head { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.step-num { font-family: var(--font-mono); font-size: 15px; color: var(--accent); font-weight: 600; }
+.step h2 { font-size: 1.5rem; margin: 0; }
+.step h3 { font-size: 1.05rem; margin: 24px 0 6px; }
+p, li { max-width: 66ch; }
+ul.check, ol.plain { padding-left: 1.3em; margin: 8px 0; }
+ul.check li, ol.plain li { margin: 4px 0; }
+
+code { font-family: var(--font-mono); font-size: .88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.codebox { position: relative; margin: 10px 0 14px; }
+.codebox .label { font: 600 12px var(--font-body); letter-spacing: .05em; color: var(--muted); padding: 0 0 4px 2px; }
+pre { margin: 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; padding-right: 76px; overflow-x: auto; font-size: 15px; line-height: 1.55; }
+pre code { background: none; padding: 0; font-size: inherit; }
+.cm { color: var(--muted); }
+.verify .label { color: var(--ok); }
+.verify pre { border-left: 3px solid var(--ok); }
+.copy {
+  position: absolute; right: 8px; bottom: 8px;
+  font: 600 12px var(--font-body); background: var(--surface); color: var(--fg);
+  border: 1px solid var(--rule); border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tooltips: hover or focus to read, click to pin */
+.tip {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; margin-left: 4px; vertical-align: 2px;
+  border: 1px solid var(--accent); color: var(--accent); background: var(--surface);
+  font: 700 12px var(--font-body); cursor: help; user-select: none;
+}
+.tip-body {
+  display: none; position: absolute; top: calc(100% + 8px); left: 0; z-index: 20;
+  width: min(340px, 84vw); padding: 12px 14px; border-radius: 8px;
+  background: var(--tip-bg); color: var(--tip-fg);
+  font: 400 14px/1.5 var(--font-body); text-align: left; cursor: auto; user-select: text;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+.tip-body code { background: rgba(127,127,127,.25); color: inherit; }
+.tip:hover .tip-body, .tip:focus .tip-body, .tip.open .tip-body { display: block; }
+
+/* Token form */
+.field { display: grid; gap: 4px; margin: 10px 0 18px; max-width: 520px; }
+.field label { font-weight: 600; font-size: 15px; }
+.field .row { display: flex; gap: 8px; }
+.field input {
+  flex: 1; min-width: 0; font: 15px var(--font-mono); padding: 9px 12px;
+  border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); color: var(--fg);
+}
+.field input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.field input.filled { border-color: var(--ok); }
+.btn {
+  font: 600 14px var(--font-body); padding: 8px 14px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--rule); background: var(--surface); color: var(--fg);
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.primary:hover:not(:disabled) { color: var(--surface); filter: brightness(1.08); }
+.privacy { font-size: 14px; color: var(--muted); }
+
+.token-block { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 4px 18px 6px; margin: 14px 0; }
+.token-block h3 { margin-top: 14px; }
+
+/* Model table */
+.tablebox { overflow-x: auto; margin: 10px 0 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+
+/* Files */
+.files { display: grid; gap: 10px; margin: 14px 0; }
+.file { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 12px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; }
+.file .fname { font: 600 15px var(--font-mono); }
+.file .dest { font: 13px var(--font-mono); color: var(--muted); margin-left: 8px; }
+.file .what { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+.file .actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.file .btn { padding: 6px 12px; font-size: 13px; }
+.file .status { grid-column: 1 / -1; font-size: 13px; }
+.file .status.ready { color: var(--ok); }
+.file .status.missing { color: var(--warn); }
+.file pre { grid-column: 1 / -1; margin-top: 6px; font-size: 13px; max-height: 340px; overflow: auto; padding-right: 16px; }
+.files-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.note { font-size: 14px; color: var(--muted); }
+
+.done-toggle { display: inline-flex; gap: 10px; align-items: center; margin-top: 16px; padding: 8px 14px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); cursor: pointer; font-size: 15px; font-weight: 600; }
+.done-toggle input { width: 18px; height: 18px; accent-color: var(--ok); }
+
+.trouble dt { font-weight: 600; margin-top: 18px; }
+.trouble dd { margin: 4px 0 0; max-width: 66ch; }
+footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; }
+
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 24px 64px; }
+  nav.rail { position: static; }
+  .rail ol { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  h1 { font-size: 1.7rem; }
+  body { font-size: 16px; }
+  .file { grid-template-columns: minmax(0, 1fr); }
+  .file .actions { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+<!--
+  To bundle the LM certificate, paste the full contents of combined.pem
+  (the -----BEGIN CERTIFICATE----- blocks) between these two script tags.
+  Leave it empty and the page links to EFOSS instead.
+-->
+<script type="text/plain" id="lm-cert"></script>
+
+<div class="wrap">
+<nav class="rail" aria-label="Steps">
+  <h2>Progress</h2>
+  <p class="progress" id="progress-text">0 of 7 steps done</p>
+  <div class="bar"><span id="progress-bar"></span></div>
+  <h2>Steps</h2>
+  <ol id="step-nav">
+    <li data-step="s1"><a href="#s1"><span class="n">1</span>Before you start</a></li>
+    <li data-step="s2"><a href="#s2"><span class="n">2</span>Get your tokens</a></li>
+    <li data-step="s3"><a href="#s3"><span class="n">3</span>Request models</a></li>
+    <li data-step="s4"><a href="#s4"><span class="n">4</span>Download files</a></li>
+    <li data-step="s5"><a href="#s5"><span class="n">5</span>Move into place</a></li>
+    <li data-step="s6"><a href="#s6"><span class="n">6</span>Install Codex</a></li>
+    <li data-step="s7"><a href="#s7"><span class="n">7</span>Test it</a></li>
+  </ol>
+  <ol><li><a href="#trouble"><span class="n">?</span>Troubleshooting</a></li></ol>
+</nav>
+
+<main>
+  <h1>Codex CLI Windows Setup</h1>
+  <p class="lede">Set up Codex CLI on your LM laptop in Git Bash. About 30 minutes, plus approval time for trainings and model access. Hover any <span class="tip" tabindex="0" aria-label="Example tooltip">?<span class="tip-body" role="tooltip">Like this. Click a ? to keep it open so you can copy from it.</span></span> for more detail.</p>
+  <span class="draft">Draft · end-to-end test with these files pending</span>
+
+  <!-- STEP 1 -->
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-num">1</span><h2>Before you start</h2></div>
+    <h3>Trainings (Atlas)</h3>
+    <ul class="check">
+      <li><b>Responsible Use of GenAI: Security, Legal, and Policy Essentials</b>, course <code>220970WPL00</code>
+        <span class="tip" tabindex="0">?<span class="tip-body">Required for anyone using Genesis models. Covers choosing between internal, cloud-hosted and external tools, what to do if data is mishandled, CPS-022 ethics, checking AI output before you share it, and CRX-002 / IRM-001 licensing.</span></span></li>
+      <li><b>FOSS User Training</b>, course <code>218268SSM00</code>
+        <span class="tip" tabindex="0">?<span class="tip-body">Required to download packages through EFOSS with npm or pip. Needed for command-line tools like Codex CLI, not for the desktop app.</span></span></li>
+    </ul>
+    <h3>Software Center</h3>
+    <ul class="check">
+      <li><b>The Git Development Community Git x64</b>
+        <span class="tip" tabindex="0">?<span class="tip-body">This is Git for Windows. It includes Git Bash, the terminal every command on this page runs in.</span></span></li>
+      <li><b>Node.js</b>, latest LTS
+        <span class="tip" tabindex="0">?<span class="tip-body">Codex installs through npm, which comes with Node.js. The installer puts <code>node</code> and <code>npm</code> on your PATH.</span></span></li>
+    </ul>
+    <h3>Have ready</h3>
+    <ul class="check">
+      <li>Your business area and an <b>RMS charge number</b>
+        <span class="tip" tabindex="0">?<span class="tip-body">The EFOSS token form asks you to pick your business area, then enter a charge number.</span></span></li>
+    </ul>
+    <div class="codebox verify"><div class="label">CHECK · in a new Git Bash window</div>
+<pre><code>git --version
+node --version
+npm --version</code></pre></div>
+    <p>Each prints a version number.</p>
+    <label class="done-toggle"><input type="checkbox" id="done-s1" data-step="s1"> Done</label>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-num">2</span><h2>Get your tokens</h2>
+      <span class="tip" tabindex="0">?<span class="tip-body">The EFOSS token lets npm download packages through Nexus, LM's internal package mirror. The Genesis tokens let Codex call models. The US and Global endpoints are cleared for different kinds of data, so check a model's page in AI Factory before using sensitive information.</span></span></div>
+    <p>Paste each value below as you go. Step 4 uses them to build your setup files.</p>
+    <p class="privacy">Nothing you type here is saved or sent anywhere.</p>
+
+    <div class="field">
+      <label for="in-ntid">Your NTID</label>
+      <div class="row"><input id="in-ntid" autocomplete="off" spellcheck="false" placeholder="e.g. e123456"></div>
+    </div>
+
+    <div class="token-block">
+      <h3>EFOSS token</h3>
+      <ol class="plain">
+        <li>Open <a href="https://efoss.global.lmco.com/accesstoken">efoss.global.lmco.com/accesstoken</a> → <b>Generate Token</b>.</li>
+        <li>Pick your business area, enter your charge number, and generate.</li>
+        <li>Copy the token right away. EFOSS shows it only once.</li>
+      </ol>
+      <div class="field">
+        <label for="in-efoss">EFOSS token</label>
+        <div class="row"><input id="in-efoss" type="password" autocomplete="off" spellcheck="false"><button class="btn reveal" type="button" data-for="in-efoss">Show</button></div>
+      </div>
+    </div>
+
+    <div class="token-block">
+      <h3>Genesis US token</h3>
+      <ol class="plain">
+        <li>Open <a href="https://genesis.ai.us.lmco.com/tokens">genesis.ai.us.lmco.com/tokens</a> → <b>Create</b>.</li>
+        <li>Name it <code>codex</code>, leave the role on <b>Member</b>
+          <span class="tip" tabindex="0">?<span class="tip-body">Member is enough for Codex. One token per tool means you can revoke one without breaking the others.</span></span>, then copy it.</li>
+      </ol>
+      <div class="field">
+        <label for="in-us">Genesis US token</label>
+        <div class="row"><input id="in-us" type="password" autocomplete="off" spellcheck="false"><button class="btn reveal" type="button" data-for="in-us">Show</button></div>
+      </div>
+    </div>
+
+    <div class="token-block">
+      <h3>Genesis Global token</h3>
+      <ol class="plain">
+        <li>Same steps at <a href="https://genesis.ai.global.lmco.com/tokens">genesis.ai.global.lmco.com/tokens</a>.</li>
+      </ol>
+      <div class="field">
+        <label for="in-global">Genesis Global token</label>
+        <div class="row"><input id="in-global" type="password" autocomplete="off" spellcheck="false"><button class="btn reveal" type="button" data-for="in-global">Show</button></div>
+      </div>
+    </div>
+    <label class="done-toggle"><input type="checkbox" id="done-s2" data-step="s2"> Done</label>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-num">3</span><h2>Request model access</h2></div>
+    <p>On each endpoint, request the <b>newest</b> version of each model offered.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Endpoint</th><th>Request page</th><th>Models</th></tr></thead>
+      <tbody>
+        <tr><td>US</td><td><a href="https://genesis.ai.us.lmco.com/model-request">genesis.ai.us.lmco.com/model-request</a></td><td>Luna, Terra</td></tr>
+        <tr><td>Global</td><td><a href="https://genesis.ai.global.lmco.com/model-request">genesis.ai.global.lmco.com/model-request</a></td><td>Luna, Sol, Terra
+          <span class="tip" tabindex="0">?<span class="tip-body">Sol is offered on the Global endpoint only, for now.</span></span></td></tr>
+      </tbody>
+    </table></div>
+    <ol class="plain">
+      <li>Pick the model from the dropdown. Leave the organization as is
+        <span class="tip" tabindex="0">?<span class="tip-body">It defaults to your personal org, named <code>&lt;NTID&gt;-us-lmco-com</code> on both endpoints.</span></span>.</li>
+      <li>Review the acceptable use policy.</li>
+      <li>Describe your use case.</li>
+      <li>Acknowledge and sign.</li>
+    </ol>
+    <p><b>Check:</b> each model shows in the <b>Already available</b> list at the bottom of the request page.</p>
+    <label class="done-toggle"><input type="checkbox" id="done-s3" data-step="s3"> Done</label>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-num">4</span><h2>Download your setup files</h2></div>
+    <p>These are built from what you entered in step 2. They all go to your Downloads folder.</p>
+    <div class="files-bar">
+      <button class="btn primary" type="button" id="dl-all">Download all</button>
+      <span class="note" id="files-summary"></span>
+    </div>
+    <div class="files" id="files"></div>
+    <p class="note">If a Download button does nothing, use Copy and save the text as a file with that name in Downloads.</p>
+    <label class="done-toggle"><input type="checkbox" id="done-s4" data-step="s4"> Done</label>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step" id="s5">
+    <div class="step-head"><span class="step-num">5</span><h2>Move files into place</h2>
+      <span class="tip" tabindex="0">?<span class="tip-body">Browsers save to Downloads and drop the leading dot from file names, so this renames each file as it moves it. Any existing <code>.bashrc</code>, <code>.npmrc</code> or <code>config.toml</code> is kept as a <code>.bak</code> copy first.</span></span></div>
+    <p>Paste this into Git Bash:</p>
+    <div class="codebox"><div class="label">GIT BASH</div>
+<pre><code>cd ~/Downloads
+for f in ~/.bashrc ~/.npmrc ~/.codex/config.toml; do [ -f "$f" ] &amp;&amp; cp "$f" "$f.bak"; done
+mkdir -p ~/.codex
+mv combined.pem ~/combined.pem
+mv tokens.txt   ~/.tokens.txt
+mv bashrc.txt   ~/.bashrc
+mv npmrc.txt    ~/.npmrc
+mv config.toml  ~/.codex/config.toml
+cd ~ &amp;&amp; source ~/.bashrc</code></pre></div>
+    <div class="codebox verify"><div class="label">CHECK</div>
+<pre><code>npm config get registry                      <span class="cm"># the Nexus URL</span>
+npm ping                                     <span class="cm"># ends with PONG</span>
+echo $PATH | tr ':' '\n' | grep -i roaming/npm <span class="cm"># one line</span>
+env | grep -i no_proxy                       <span class="cm"># two lines, same value</span>
+echo ${AIFACTORY_US_API_KEY:0:6}             <span class="cm"># first 6 characters only</span></code></pre></div>
+    <p>If <code>npm ping</code> returns <b>502 Bad Gateway</b>, see <a href="#trouble">Troubleshooting</a>.</p>
+    <label class="done-toggle"><input type="checkbox" id="done-s5" data-step="s5"> Done</label>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step" id="s6">
+    <div class="step-head"><span class="step-num">6</span><h2>Install Codex</h2></div>
+    <p>Find the newest approved version on <a href="https://efoss.global.lmco.com/search/codex">EFOSS</a>
+      <span class="tip" tabindex="0">?<span class="tip-body">EFOSS approval can lag the newest published release. Installing an unapproved version isn't allowed.</span></span>, then install it:</p>
+    <div class="codebox"><div class="label">GIT BASH · replace &lt;version&gt;, e.g. 0.147.0</div>
+<pre><code>npm install -g @openai/codex@&lt;version&gt;</code></pre></div>
+    <div class="codebox verify"><div class="label">CHECK</div>
+<pre><code>codex --version</code></pre></div>
+    <p>If it says <code>command not found</code>, open a new Git Bash window and try again.</p>
+    <label class="done-toggle"><input type="checkbox" id="done-s6" data-step="s6"> Done</label>
+  </section>
+
+  <!-- STEP 7 -->
+  <section class="step" id="s7">
+    <div class="step-head"><span class="step-num">7</span><h2>Test it</h2></div>
+    <div class="codebox verify"><div class="label">GIT BASH</div>
+<pre><code>codex exec --skip-git-repo-check "Say hello in five words."      <span class="cm"># US endpoint, default model</span>
+codex-sol exec --skip-git-repo-check "Say hello in five words."  <span class="cm"># Global endpoint, Sol</span></code></pre></div>
+    <p>Each should print a short reply.
+      <span class="tip" tabindex="0">?<span class="tip-body"><code>codex exec</code> normally only runs inside a Git repository. The flag lets you test from your home folder.</span></span></p>
+    <p>Then run <code>codex</code> on its own to open the interactive view, and type <code>/status</code> to see the model and endpoint in use.</p>
+    <p><b>Switching models:</b> use <code>codex-sol</code> for Sol, or <code>codex -m &lt;model&gt;</code> for one session.
+      <span class="tip" tabindex="0">?<span class="tip-body">Avoid <code>/model</code> inside Codex for routine switching. It writes the change back to <code>config.toml</code>, so the new model becomes your default.</span></span></p>
+    <label class="done-toggle"><input type="checkbox" id="done-s7" data-step="s7"> Done</label>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section class="step" id="trouble">
+    <div class="step-head"><h2>Troubleshooting</h2></div>
+    <dl class="trouble">
+      <dt>502 Bad Gateway from an lmco.com address</dt>
+      <dd>The proxy bypass is wrong, not the server. Run <code>env | grep -i proxy</code>. Both <code>no_proxy</code> and <code>NO_PROXY</code> should read <code>localhost,127.0.0.1,.lmco.com</code>. If not, open a new window so the downloaded <code>.bashrc</code> takes effect.</dd>
+
+      <dt><code>codex: command not found</code></dt>
+      <dd>npm's global folder isn't on PATH. Open a new Git Bash window, or run <code>source ~/.bashrc</code>.</dd>
+
+      <dt>401 Unauthorized</dt>
+      <dd>Check that the model shows under <b>Already available</b> (step 3), that you pasted the right token for that endpoint, and that your NTID was typed correctly before downloading <code>config.toml</code>.</dd>
+
+      <dt>npm warns about <code>always-auth</code></dt>
+      <dd>Delete that line from <code>~/.npmrc</code>. Current npm doesn't use it.</dd>
+
+      <dt>Codex ignores your config.toml</dt>
+      <dd>Run <code>echo $CODEX_HOME</code>. If it prints a folder, Codex reads <code>config.toml</code> from there instead of <code>~/.codex</code>. The Codex desktop app can set this.</dd>
+
+      <dt>Download saved as <code>tokens (1).txt</code></dt>
+      <dd>An older copy was already in Downloads. Delete the old files and download again.</dd>
+
+      <dt>Keeping tokens safe</dt>
+      <dd><code>~/.tokens.txt</code> and <code>~/.npmrc</code> hold your credentials. Never share, screenshot or commit them. If one leaks, revoke that token and make a new one.</dd>
+    </dl>
+  </section>
+
+  <footer>Based on the AI Factory Codex CLI guide and EFOSS setup pages, adjusted for this team's setup. Questions: Kalki Sharma.</footer>
+</main>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var CERT = ($('lm-cert').textContent || '').trim();
+  CERT = CERT ? CERT + '\n' : '';
+
+  // ---------- inputs ----------
+  function vals() {
+    return {
+      ntid: $('in-ntid').value.trim().toLowerCase(),
+      efoss: $('in-efoss').value.trim(),
+      us: $('in-us').value.trim(),
+      global: $('in-global').value.trim()
+    };
+  }
+  function b64(s) { try { return btoa(s); } catch (e) { return ''; } }
+  function hide(label) { return '<' + label + ' hidden>'; }
+
+  // ---------- file templates ----------
+  function tokensTxt(v, mask) {
+    return [
+      '# Genesis API tokens, loaded by ~/.bashrc.',
+      '# Never share, screenshot or commit this file.',
+      'export AIFACTORY_US_API_KEY="' + (mask ? hide('US token') : v.us) + '"',
+      'export AIFACTORY_GLOBAL_API_KEY="' + (v.global ? (mask ? hide('Global token') : v.global) : '') + '"' + (v.global ? '' : '   # paste your Global token here when you have it'),
+      ''
+    ].join('\n');
+  }
+  function bashrc() {
+    return [
+      '# ~/.bashrc for Codex CLI on Windows (Git Bash)',
+      '',
+      '# npm global packages, where the codex command lives',
+      'export NPM_HOME="/c/Users/$USERNAME/AppData/Roaming/npm"',
+      'export PATH="$NPM_HOME:$PATH"',
+      '',
+      '# LM-internal hosts skip the proxy. Both spellings must match.',
+      'export no_proxy="localhost,127.0.0.1,.lmco.com"',
+      'export NO_PROXY="$no_proxy"',
+      '',
+      '# LM certificate, for tools that read these variables',
+      'export NODE_EXTRA_CA_CERTS="C:/Users/$USERNAME/combined.pem"',
+      'export SSL_CERT_FILE="C:/Users/$USERNAME/combined.pem"',
+      'export REQUESTS_CA_BUNDLE="C:/Users/$USERNAME/combined.pem"',
+      '',
+      '# Genesis tokens live in their own file',
+      '[ -f "$HOME/.tokens.txt" ] && source "$HOME/.tokens.txt"',
+      '',
+      '# Sol on the Global endpoint, for one session, without editing config.toml',
+      "alias codex-sol='codex -m gpt-5.6-sol -c model_provider=aifactory_global'",
+      ''
+    ].join('\n');
+  }
+  function npmrc(v, mask) {
+    var auth = mask ? hide('EFOSS auth') : b64(v.ntid + ':' + v.efoss);
+    return [
+      'registry=https://nexus.global.lmco.com/repository/npm-proxy/',
+      'cafile=C:/Users/' + (v.ntid || '<NTID>') + '/combined.pem',
+      '//nexus.global.lmco.com/repository/npm-proxy/:_auth=' + auth,
+      ''
+    ].join('\n');
+  }
+  function configToml(v) {
+    var org = (v.ntid || '<NTID>') + '-us-lmco-com';
+    var headers = 'http_headers = { "openai-organization" = "' + org + '", "X-AI-FACTORY-CLIENT" = "codex" }';
+    return [
+      '# ---- Model selection (override per session with -m) ----',
+      'model          = "gpt-5.6-terra"',
+      'review_model   = "gpt-oss-120b"',
+      'model_provider = "aifactory"          # US endpoint by default',
+      '',
+      '# ---- Behavior ----',
+      'web_search = "disabled"',
+      'model_reasoning_effort  = "medium"',
+      'model_reasoning_summary = "detailed"',
+      'model_verbosity         = "medium"    # output length',
+      'model_supports_reasoning_summaries = true',
+      '',
+      '# ---- Approval and sandbox ----',
+      'approval_policy = "on-request"        # asks before doing anything outside the sandbox',
+      'sandbox_mode    = "workspace-write"   # may edit files in the current project only',
+      '',
+      '# ---- Housekeeping (top-level keys must come before any [table]) ----',
+      'file_opener = "vscode"',
+      'cli_auth_credentials_store = "file"',
+      'project_doc_max_bytes = 32768',
+      'project_doc_fallback_filenames = []',
+      'windows_wsl_setup_acknowledged = true',
+      '',
+      '[windows]',
+      'sandbox = "unelevated"',
+      '',
+      '[sandbox_workspace_write]',
+      'writable_roots = []',
+      'network_access = false',
+      '',
+      '[shell_environment_policy]',
+      'inherit = "all"',
+      'ignore_default_excludes = false       # keeps variables named *KEY*, *SECRET*, *TOKEN* away from the agent',
+      '',
+      '[history]',
+      'persistence = "save-all"',
+      '',
+      '[tui]',
+      'notifications = true',
+      '',
+      '[analytics]',
+      'enabled = false',
+      '',
+      '[otel]',
+      'exporter = "none"',
+      'log_user_prompt = false',
+      '',
+      '[marketplaces.lm-plugin-marketplace]',
+      'source_type = "git"',
+      'source = "https://gitlab.us.lmco.com/chatgpt/plugin-marketplace.git"',
+      'ref = "main"',
+      '',
+      '# ---- Providers: one per Genesis endpoint ----',
+      '[model_providers.aifactory]',
+      'name     = "aifactory"',
+      'base_url = "https://api.ai.us.lmco.com/v1"',
+      'env_key  = "AIFACTORY_US_API_KEY"',
+      'wire_api = "responses"',
+      headers,
+      '',
+      '[model_providers.aifactory_global]',
+      'name     = "aifactory_global"',
+      'base_url = "https://api.ai.global.lmco.com/v1"',
+      'env_key  = "AIFACTORY_GLOBAL_API_KEY"',
+      'wire_api = "responses"',
+      headers,
+      ''
+    ].join('\n');
+  }
+
+  var LABELS = { ntid: 'NTID', efoss: 'EFOSS token', us: 'Genesis US token' };
+  var FILES = [
+    { id: 'pem', name: 'combined.pem', dest: '~/combined.pem', what: 'LM security certificate', needs: [],
+      build: function () { return CERT; }, view: function () { return CERT; }, extra: function () { return CERT ? '' : 'Not bundled in this copy. Download it from the EFOSS help page and save it to Downloads as combined.pem.'; } },
+    { id: 'tokens', name: 'tokens.txt', dest: '~/.tokens.txt', what: 'Your Genesis tokens', needs: ['us'],
+      build: function (v) { return tokensTxt(v, false); }, view: function (v) { return tokensTxt(v, true); } },
+    { id: 'bashrc', name: 'bashrc.txt', dest: '~/.bashrc', what: 'Shell settings: PATH, proxy bypass, certificate, tokens', needs: [],
+      build: bashrc, view: bashrc },
+    { id: 'npmrc', name: 'npmrc.txt', dest: '~/.npmrc', what: 'npm settings for Nexus', needs: ['ntid', 'efoss'],
+      build: function (v) { return npmrc(v, false); }, view: function (v) { return npmrc(v, true); } },
+    { id: 'toml', name: 'config.toml', dest: '~/.codex/config.toml', what: 'Codex settings and both Genesis endpoints', needs: ['ntid'],
+      build: configToml, view: configToml }
+  ];
+
+  // ---------- file rows ----------
+  var box = $('files');
+  FILES.forEach(function (f) {
+    var row = document.createElement('div');
+    row.className = 'file';
+    row.innerHTML =
+      '<div><span class="fname">' + f.name + '</span><span class="dest">→ ' + f.dest + '</span>' +
+      '<p class="what">' + f.what + '</p></div>' +
+      '<div class="actions">' +
+        '<button class="btn" type="button" data-act="dl">Download</button>' +
+        '<button class="btn" type="button" data-act="copy">Copy</button>' +
+        '<button class="btn" type="button" data-act="view" aria-expanded="false">View</button>' +
+      '</div>' +
+      '<div class="status"></div><pre hidden></pre>';
+    f.el = row;
+    row.querySelector('[data-act=dl]').addEventListener('click', function () { download(f); });
+    row.querySelector('[data-act=copy]').addEventListener('click', function (e) { copyText(f.build(vals()), e.currentTarget, 'Copy'); });
+    row.querySelector('[data-act=view]').addEventListener('click', function (e) {
+      var pre = row.querySelector('pre'); pre.hidden = !pre.hidden;
+      e.currentTarget.textContent = pre.hidden ? 'View' : 'Hide';
+      e.currentTarget.setAttribute('aria-expanded', String(!pre.hidden));
+    });
+    box.appendChild(row);
+  });
+
+  function missing(f, v) {
+    var m = f.needs.filter(function (k) { return !v[k]; }).map(function (k) { return LABELS[k]; });
+    if (f.id === 'pem' && !CERT) m.push('certificate');
+    return m;
+  }
+  function render() {
+    var v = vals(), ready = 0;
+    ['in-ntid', 'in-efoss', 'in-us', 'in-global'].forEach(function (id) { $(id).classList.toggle('filled', !!$(id).value.trim()); });
+    FILES.forEach(function (f) {
+      var m = missing(f, v), ok = m.length === 0, st = f.el.querySelector('.status');
+      f.el.querySelector('[data-act=dl]').disabled = !ok;
+      f.el.querySelector('[data-act=copy]').disabled = !ok;
+      f.el.querySelector('[data-act=view]').disabled = !ok;
+      st.className = 'status ' + (ok ? 'ready' : 'missing');
+      if (f.id === 'pem' && !CERT) {
+        st.innerHTML = 'Not bundled in this copy. Get it from the <a href="https://efoss.global.lmco.com/help/#quick-start">EFOSS help page</a> and save it to Downloads as <code>combined.pem</code>.';
+      } else {
+        st.textContent = ok ? (f.id === 'tokens' && !v.global ? 'Ready · Global token left blank, add it later' : 'Ready') : 'Needs: ' + m.join(', ') + ' (step 2)';
+      }
+      f.el.querySelector('pre').textContent = ok ? f.view(v) : '';
+      if (ok) ready++;
+    });
+    $('files-summary').textContent = ready + ' of ' + FILES.length + ' files ready';
+    $('dl-all').disabled = ready === 0;
+  }
+  ['in-ntid', 'in-efoss', 'in-us', 'in-global'].forEach(function (id) { $(id).addEventListener('input', render); });
+
+  document.querySelectorAll('.reveal').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = $(b.dataset.for), show = i.type === 'password';
+      i.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show';
+    });
+  });
+
+  function download(f) {
+    var text = f.build(vals());
+    if (!text) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    a.download = f.name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  $('dl-all').addEventListener('click', function () {
+    var v = vals(), list = FILES.filter(function (f) { return missing(f, v).length === 0; });
+    list.forEach(function (f, i) { setTimeout(function () { download(f); }, i * 400); });
+  });
+
+  // ---------- copy ----------
+  function copyText(text, btn, idle) {
+    function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = idle; }, 1400); }
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      ta.remove(); done(ok ? 'Copied' : 'Copy failed');
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done('Copied'); }, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  }
+  document.querySelectorAll('.codebox pre').forEach(function (pre) {
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'copy'; btn.textContent = 'Copy';
+    btn.addEventListener('click', function () { copyText(pre.innerText.replace(/\n$/, ''), btn, 'Copy'); });
+    pre.parentNode.appendChild(btn);
+  });
+
+  // ---------- tooltips ----------
+  function place(t) {
+    var b = t.querySelector('.tip-body'); if (!b) return;
+    b.style.left = '0px';
+    var r = b.getBoundingClientRect(), over = r.right - (document.documentElement.clientWidth - 12);
+    if (over > 0) b.style.left = (-over) + 'px';
+    r = b.getBoundingClientRect();
+    if (r.left < 12) b.style.left = (parseFloat(b.style.left) + 12 - r.left) + 'px';
+  }
+  document.querySelectorAll('.tip').forEach(function (t) {
+    t.setAttribute('role', 'button');
+    if (!t.hasAttribute('aria-label')) t.setAttribute('aria-label', 'More information');
+    ['mouseenter', 'focus'].forEach(function (ev) { t.addEventListener(ev, function () { requestAnimationFrame(function () { place(t); }); }); });
+    t.addEventListener('click', function (e) {
+      if (e.target.closest('.tip-body')) return;
+      var open = !t.classList.contains('open');
+      document.querySelectorAll('.tip.open').forEach(function (o) { o.classList.remove('open'); });
+      if (open) { t.classList.add('open'); requestAnimationFrame(function () { place(t); }); }
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.tip')) document.querySelectorAll('.tip.open').forEach(function (o) { o.classList.remove('open'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') document.querySelectorAll('.tip.open').forEach(function (o) { o.classList.remove('open'); });
+  });
+
+  // ---------- progress (remembered per browser; tokens are never stored) ----------
+  var KEY = 'codex-setup-progress-v2', state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { state = {}; }
+  var boxes = document.querySelectorAll('input[type=checkbox][data-step]');
+  function renderProgress() {
+    var n = 0;
+    boxes.forEach(function (b) {
+      var on = !!state[b.dataset.step]; b.checked = on; if (on) n++;
+      var li = document.querySelector('#step-nav li[data-step="' + b.dataset.step + '"]');
+      if (li) li.classList.toggle('done', on);
+    });
+    $('progress-text').textContent = n + ' of ' + boxes.length + ' steps done';
+    $('progress-bar').style.width = (100 * n / boxes.length) + '%';
+  }
+  boxes.forEach(function (b) {
+    b.addEventListener('change', function () {
+      state[b.dataset.step] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      renderProgress();
+    });
+  });
+
+  render();
+  renderProgress();
+})();
+</script>
+</body>
+</html>

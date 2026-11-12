@@ -1,139 +1,45 @@
-AI Workflow Automation Show-and-Tell — Project Handoff
-
-I’m continuing work on an existing 12-slide engineering presentation called “Automating Your Engineering Workflow with AI.”
-
-Please read the attached project handoff document and inspect the refined PowerPoint and accompanying PDF before making changes.
-
-Background
-
-I’m Kalki Sharma, a senior aerospace engineer working in computational aerodynamics and CFD at Lockheed Martin.
-
-This is a monthly, informal show-and-tell presentation for approximately 40 engineers from different disciplines, including aerodynamics, thermal, propulsion, dynamics, space, and AI/ML.
-
-Important: This is a general engineering audience, not an aerospace-sciences-specific presentation.
-
-The goal isn’t to teach advanced AI theory. It’s to give engineers an approachable introduction to AI-assisted workflow automation, show practical examples, and encourage attendees to present their own workflows at future sessions.
-
-The desired tone is fun, conversational, technically credible, and accessible to people who aren’t AI experts.
-
-Presentation philosophy
-
-* Minimal text and strong visuals.
-* One primary idea per slide.
-* Engineering examples that work across disciplines.
-* Practical explanations rather than excessive jargon.
-* Clear distinction between AI-generated work and verified engineering results.
-* Speaker notes that provide enough detail for natural, confident delivery.
-
-Current presentation
-
-The deck has 12 slides, already professionally refined.
-
-Slides 1–2: Introduction
-
-Explain why this monthly series exists, introduce AI agents in approachable language, and establish that small workflow improvements are worth sharing.
-
-Slides 3–4: Context engineering
-
-Explain why providing the right instructions, reference documents, and working files improves an agent’s results.
-
-Use concrete engineering examples. Avoid suggesting that better context guarantees correctness.
-
-Slide 5: Prompt chaining
-
-Show a sequential engineering workflow:
-
-Test report → Extract data → Prepare inputs → Run analysis → Summary.
-
-Emphasize verification between steps.
-
-Slide 6: Orchestrator–workers
-
-Show specialized workers performing separate tasks such as checking analysis status, comparing measurements, tracking action items, and reviewing schedules.
-
-A coordinator combines their outputs into a weekly report.
-
-Explain the distinction between this pattern and sequential prompt chaining.
-
-Slide 7: Three practical habits
-
-Show a good example, reference relevant files, and begin with one small reliable automation chain.
-
-Slide 8: Engineering verification
-
-Emphasize reviewing assumptions, units, data sources, independent calculations, and trusted reference results.
-
-The engineer remains responsible for engineering judgment.
-
-Slide 9: Getting started
-
-Demonstration placeholder for an internal setup hub with an embedded chatbot.
-
-Slide 10: Engineering workflow
-
-Demonstration placeholder for a real program workflow, showing the previous process, automation, verification, and result.
-
-Slide 11: RCAS end to end
-
-Demonstration placeholder for an RCAS-related workflow. Confirm the actual software functionality before describing what the demo can do.
-
-Slide 12: Closing
-
-Encourage attendees to start small, have fun, ask for help, and present their own workflows.
-
-Upcoming topics include token efficiency, choosing the right model, and Git basics.
-
-Visual design
-
-The existing presentation uses a polished, flat design with a 16:9 format.
-
-Main colors:
-
-* Navy: #0E1A3A
-* Indigo: #1C2E6B
-* Orange: #FF7A30
-* Teal: #1FB5A8
-* Light background: #EEF2FB
-* Text: #16213E
-
-Font: Calibri, with Courier New for short technical examples.
-
-The deck uses dark opening and closing slides, rounded cards, circular icons, simple workflow diagrams, and very little decorative clutter.
-
-Preserve the existing visual system.
-
-Project files
-
-The refined PowerPoint is the current working master.
-
-The PDF contains the corresponding slide images and presenter notes.
-
-The original PowerPoint is available as a historical reference.
-
-The Python refinement script modifies the original PowerPoint to generate the refined version. The original build_deck.py generator has not yet been synchronized with the refinement changes.
-
-Avoid accidentally regenerating the outdated deck.
-
-Important decisions
-
-A professional review has already been completed. The narrative structure is good and should largely remain intact.
-
-We’ve deliberately broadened the technical examples from CFD-specific to general engineering.
-
-We’ve also improved the technical precision around agent capabilities, context, orchestration, verification, and data access.
-
-Do not undo these improvements.
-
-Do not fabricate internal program information, screenshots, measured benefits, or demonstrations. All internal content must be appropriate for the intended audience.
-
-What I need going forward
-
-Help me continue improving this existing deck, not rebuild it unnecessarily.
-
-Prioritize presentation clarity, narrative flow, technical accuracy, visual consistency, and natural speaker notes.
-
-The main unfinished task is completing slides 9–11 using actual demonstration material.
-
-When modifications are made, produce an editable PowerPoint and a corresponding PDF with speaker notes, and visually inspect the rendered slides.
-
-The overall goal is to make engineering colleagues feel that AI-assisted automation is practical, approachable, and something they can start experimenting with immediately.
+You're helping me run a CFD audit live in front of colleagues, so keep each step visible and explain briefly what you're doing and why.
+
+CONTEXT
+- I'm an aerodynamicist on the Dragonfly program. This is a standalone single-rotor, discrete-blade STAR-CCM+ simulation.
+- Audit scope today: geometry, regions, and mesh, with a focus on the blade mesh settings compared against our mesh recommendations.
+- Purpose: show that an agent can do the pre-flight audit that we normally do by hand, and that it can be reused on other cases.
+
+CASE DETAILS
+- Single 3-bladed rotor. Expect 3 blade parts or one patterned blade, a rotating region (or overset blade regions), and a stationary background domain.
+- Check that all 3 blades have identical mesh settings and similar cell counts. Flag any blade that differs.
+
+ENVIRONMENT
+- We are on HPC, inside an interactive PBS job I started with qsub. Use only the resources in this job.
+- Simulation: [PATH/TO/case.sim]
+- Mesh recommendations: [PATH/TO/recommendations doc]. If it's a PDF or slides, extract the recommendations into a text table first and show it to me.
+- Load STAR-CCM+ with: [module load ... / path to starccm+]. Check the version first.
+
+RULES
+- Read-only. Copy the .sim into ~/audit-demo/ and work only on the copy. Never modify or overwrite the original.
+- Do not submit new qsub jobs, re-mesh, or run the solver without asking me first.
+- Use STAR-CCM+ in batch mode with Java macros to extract settings. Save every macro so we can reuse it.
+- If a value isn't in the sim or the recommendations, say so. Never guess or invent numbers.
+
+STEPS
+1. Plan: list what you'll extract and how, then wait for my OK.
+2. Inventory: STAR-CCM+ version, file size, physics continua, and whether a mesh already exists.
+3. Geometry and regions: parts, part contacts, regions, boundaries and their types, interfaces, and the rotating or overset setup. Flag anything unassigned, duplicated, or oddly named.
+4. Mesh settings: global base size; surface min/target sizes; growth rate; curvature and proximity settings; prism layer count, total thickness, near-wall thickness, and stretching; custom surface controls on the blade (leading edge, trailing edge, tip, root); volumetric controls around the blade and wake.
+5. Mesh quality, if a mesh exists: cell count per region, and skewness, volume change, face validity, and cell quality distributions. Flag any bad cells.
+6. Compare against the recommendations in a table with these columns: Setting | Recommended | Actual | Pass/Warn/Fail | Note. If the flow conditions are in the sim (RPM, tip speed, density, viscosity), estimate the blade y+ from the near-wall thickness and check it against the target.
+7. Close with a plain-language summary of the top 3 issues and what you'd change, the kind of thing you'd say to a reviewer.
+
+VISUAL OUTPUT (generate as you go, not only at the end)
+- After each step, export images from STAR-CCM+ in batch with scene hardcopy, using offscreen rendering, into ~/audit-demo/images/:
+  1. Geometry: the full domain and a close-up of the rotor, colored by region/part.
+  2. Boundaries: the blade surfaces colored by boundary type.
+  3. Surface mesh: one blade, with views zoomed on the leading edge, trailing edge, tip, and root.
+  4. Volume mesh slices: one plane through the rotor disk, one plane cutting through a blade section at about 75% R (shows prism layers), and one plane in the wake.
+  5. Prism layers: a close-up at the blade surface so the layer count and growth are visible.
+  6. Mesh quality: cells over the threshold for skewness or volume change, shown on the slices.
+  7. Volumetric controls: the refinement zones overlaid on the geometry.
+- Make quality histograms and a cells-per-region bar chart with Python/matplotlib.
+- Test a single image export first. If offscreen rendering fails, tell me, try the software-rendering option for this STAR-CCM+ version, and if that also fails, export the data and plot it in Python.
+
+HTML REP

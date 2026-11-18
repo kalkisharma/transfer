@@ -1,3 +1,11 @@
-Hey, I was thinking more about our conversation earlier, and I think you made a good point about keeping reliable, static tools. I realized I was making a few assumptions about AI always being accessible, capable, and properly reviewed.
+For today’s STAR-CCM+ session, we’ll focus on:
 
-I still think we need to fundamentally rethink how we develop tools rather than just keep building on what we have. We should be using AI to build flexible, modular, validated tools that aren’t dependent on AI to function. My biggest concern is investing heavily in solutions that might already be outdated by the time we’re done developing them.
+* Moving simulations into individual directories.
+* Launching STAR-CCM+ on HPC compute nodes using qsub.
+* Importing, positioning, and inspecting new geometry within the duct.
+* Incorporating the geometry into the fluid domain, including basic Boolean operations and surface repair.
+
+If you have your own geometry, please bring it! Otherwise, we’ll use simple shapes (e.g., a sphere or cube) to introduce an obstruction into the flow.
+
+We’ll focus on meshing and running the modified cases next session.
+

@@ -1,11 +1,84 @@
-For today’s STAR-CCM+ session, we’ll focus on:
+# STAR-CCM+ Discrete Blade Mesh Audit – Agent Prompt
 
-* Moving simulations into individual directories.
-* Launching STAR-CCM+ on HPC compute nodes using qsub.
-* Importing, positioning, and inspecting new geometry within the duct.
-* Incorporating the geometry into the fluid domain, including basic Boolean operations and surface repair.
+## Objective
+Audit the mesh settings in the existing discrete blade simulation against the mesh recommendations you already produced. Then apply the recommended changes, remesh, run the case, and compare results with the baseline. Separately, export the mesh and solution to a .ccm file and verify that it can be read into a new sim. Every stage produces a record that a separate agent will turn into a review slide, so we have a visual history of your work that we can check.
 
-If you have your own geometry, please bring it! Otherwise, we’ll use simple shapes (e.g., a sphere or cube) to introduce an obstruction into the flow.
+## Before you start: ask me for inputs
+Before you start, ask me only what you need to get going, one question at a time. Keep it light. Typically this covers:
+- The path to the baseline sim file
+- The location of the mesh recommendations, if they aren't already in your context
+- The path to the sample qsub file
+- The working and output directory for versioned sims, stage records, and images
+- The sim to use for the CCM export, and any fields beyond velocity and pressure to include
+- Any scenes, plots, or reports that must be in the baseline extraction
 
-We’ll focus on meshing and running the modified cases next session.
+If more questions come up later, ask them one at a time. Otherwise keep going.
 
+## Ground rules
+- Read-only extraction. Data and scene extraction must never modify or save the original sim.
+- Version before you change anything. Before any change, save the sim under a new versioned name, for example <case>_v01_baseline.sim (an untouched copy), then <case>_v02_meshmod.sim, and so on. Never overwrite an earlier version.
+- Changelog. Keep changelog.md up to date with the version, timestamp, what changed (setting, old value, new value), why it changed, and the parent version. To revert, reopen the parent version.
+- Record every gate; don't stop. At the end of each stage, write the stage record, including the paths to all scenes and images, then continue to the next stage. A separate agent builds review slides from these records so we can approve the work gate by gate. The only exception is the stop before the 20-node run (Gate 3).
+- Show evidence, not claims. Every result must come with numbers, images, or log excerpts. If something failed or is uncertain, say so in the record.
+
+## Cluster execution
+For this job, run all STAR-CCM+ work on compute nodes through qsub, not on the head node. Use the sample qsub file I provide as the template.
+- Extraction and scene generation: 1 node, medium queue, 24-hour wall time limit.
+- Remeshing and running the modified case: 20 nodes, general queue. Log each submission in the stage record.
+- After submitting, confirm the job is running before connecting or running macros. Batch Java macros are preferred.
+- In each stage record, log the job ID, queue, node count, wall time used, and log file path.
+
+## Stage 1 – Baseline extraction (read-only)
+The sim has already been run. Extract the current state:
+- Existing scenes and plots as images, including pressure and velocity (magnitude and X, Y, Z components).
+- Key monitors and reports: residuals, forces and moments, and any performance metrics in the sim.
+- Mesh visuals: the blade surface mesh, section cuts at 25%, 50%, and 75% span, and leading-edge and trailing-edge close-ups.
+- Mesh statistics: total cell count, cell count by region, prism layer settings, and quality metrics (skewness, volume change, face validity).
+
+Save every camera view and scalar range as named views, so later stages can reproduce identical images for side-by-side comparison.
+
+Gate 1: Write the stage record and continue.
+
+## Stage 2 – Settings vs. recommendations (no changes)
+Build a comparison table with one row per mesh setting. Columns: setting, current value, recommended value, match or mismatch, proposed change, and expected impact. Flag any recommendation you are not confident in.
+
+Gate 2: Write the stage record and continue, applying the mismatched recommendations.
+
+## Stage 3 – Apply changes and remesh
+On compute nodes (1 node, medium queue unless I say otherwise):
+1. Open v01, clear the solution, and save as v02 before editing anything.
+2. Apply the recommended mesh changes from Stage 2 and log each one in the changelog.
+3. Remesh and save.
+4. Regenerate the same mesh images using the saved views from Stage 1.
+5. Report the mesh deltas: cell count (total and by region), quality metrics, and prism layers, as baseline vs. new.
+
+Gate 3: Write the stage record with before/after image pairs, then stop. Wait for my go-ahead before submitting the 20-node run. This is the only stop in the process.
+
+## Stage 4 – Run the modified case
+Submit on 20 nodes in the general queue. Once the run is done, extract the same scenes, plots, and reports as Stage 1 with identical views and color scales. Report the deltas for forces, performance metrics, and convergence behavior, and note anything that looks unphysical.
+
+Gate 4: Write the stage record and continue.
+
+## Stage 5 – CCM export and round-trip check
+1. From the sim I specify (read-only), export the mesh and solution to .ccm, including velocity (X, Y, Z), pressure, and any other initial-condition fields I name.
+2. Verify the export: import it into a new, empty sim and compare cell count, region names, boundary names, and the min, max, and mean of each field against the source.
+3. Report pass or fail for each check.
+
+Gate 5: Write the stage record.
+
+## Stage record format (for the slide agent)
+For each stage, write stage_NN/record.md and an images/ folder. Each record should contain:
+- Stage name and the one-sentence purpose
+- What was checked or changed
+- Key numbers: before, after, delta
+- Images, as paired before/after where they apply, using a consistent naming scheme
+- Result: pass, fail, or needs review, with a one-line reason
+- Cost: wall time, node-hours, and agent time or tokens if available
+- Job ID, sim version, and changelog reference
+
+## Coordination with the slide agent
+A separate agent builds the slides. To avoid conflicts:
+- You write only to stage_NN/ folders, the versioned sims, and changelog.md. Never create or edit anything in slides/.
+- Write each stage's record.md and images first. Create an empty stage_NN/DONE file last, only when that stage is complete. The slide agent reads a stage only after DONE exists.
+- Never edit a stage folder after its DONE exists. If you need to correct one, write a new stage_NN_rev2/ with its own DONE, and note the reason in changelog.md.
+- Use relative paths for images in each record.

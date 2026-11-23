@@ -1,12 +1,12 @@
-Yes, commit.
+Answers:
+1. Yes, read the A1/A2 logs and tell me what the tip face is: flat or not, and its angle to the span. I'll also check it in SpaceClaim. As far as I know, this blade's tip is a plain airfoil section with no cap. "flat" means the end face lies in the real tip plane, tilted or not. If the logs disagree with me, show me and don't change anything yet.
+2. Yes: find the corners precisely on each slice, and smooth along the span only if the line check flags them. Same rule for the LE.
+3. Yes: TE type is a setting, and detection stays as a check.
 
-Next change: make the tip type a setting.
-- "flat" (this blade): the tip is a plain airfoil section. Smooth every slice through 80 like the rest. Run the loft out to the tip face and close it with a flat end face. No kept tip piece and no tip join. For the last section, use the tip face edge or extrapolate, whichever you recommend, and say why.
-- "cap" (future blades): keep the original tip piece and the exact slice at 80, as now.
-The root stays as it is: kept piece, exact 0-9, join at 9.
+Order:
+- Small-TE smoothing: first compare this blade's TE radius with the 0.1%-chord limit. If the limit is already well below the TE radius here, defer it.
+- Do blunt TE after this blade's surface is built. Keep the surface code structured so the blunt case (side surface + base) slots in later.
 
-Design these in now for future blades, with made-up test blades:
-- Blunt TE: the TE corners are hard breaks. Pressure side, suction side and TE base are separate curves that meet exactly at the corners, with no smoothing across them. Smooth the corner lines along the span the same way as the LE. The TE point count must handle non-round TEs.
-- Small TE: the smoothing limit is 0.1% of chord, about 10x a 1e-4-chord TE radius. Near the TE, scale the limit to the local TE radius or thickness instead.
+Installing cadquery-ocp with pip is approved.
 
-Reply with the updated plan and your confidence. Don't write code yet.
+The plan isn't approved yet. I'll send one more change next, a section review stage. Don't write code yet.

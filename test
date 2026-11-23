@@ -1,5 +1,4 @@
-Yes, commit.
-
-Don't treat the plan as approved yet. I have more changes, which I'll send one at a time. For now:
-1. Give me the command to run profiles on the real data to make profiles_v04, and the command to export it as curves, so I can compare all three sets over the blade in SpaceClaim.
-2. For fixes 1-4: did each test fail before its fix and pass after? Give the counts.
+Good. Three things:
+1. Fix 2: keep it only if a test shows it's needed. Add a made-up blade with a much smaller TE radius, closer to future blades. If the old search fails on it, keep the fix with that test. If not, undo it.
+2. You changed the test cut to give at least 5 points per TE face. What does the code do when a real cut gives fewer than that? It should stop or flag that slice, not quietly produce a bad fit. Add a test for that case.
+3. Why is slice 80 held exact in --exact 0-9,80? Is 80 the last slice? This blade's tip is a plain airfoil section, so I want the tip sections smoothed like the rest. More on the tip in my next message. Just answer for now, don't change anything.

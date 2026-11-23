@@ -1,3 +1,6 @@
-Yes, do both, then commit and start step 4. Two notes for step 4:
-- Tilt is 0, so slice 84 is a plain slice at constant X. No tilted-plane mapping is needed for this blade. Keep the tilted case for future blades only, with a made-up test.
-- Spacing jumps near the tip (79-80 vs 80-84). Make sure smoothing, the line check and the later spanwise fit all use actual span position, not slice number. If any of them uses slice number, add a made-up test with uneven spacing that fails first.
+Ran both. Read the summaries and report:
+- How many slices are over any limit, and which ones.
+- For slices 20-28: TE radius on the raw cut vs the smoothed curve, max fit error near the TE, and what detection says.
+- Thickness change at x/c 0.99 compared with smoothed_v04, which had over 5% on 11 slices and up to 38% on one.
+Don't change code yet.
+Also: next time you compare against old code, use a separate worktree or copy, not git stash.

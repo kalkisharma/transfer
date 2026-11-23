@@ -1,5 +1,5 @@
-Before we approve the plan, two things.
+Yes, commit.
 
-1. Your rule "I never open real data": where does it come from? Quote the source. The blade data is not restricted. If the rule exists for robustness (build and test only on synthetic blades so the code isn't tuned to this one), keep that part. But you may read the real data when reviewing sections or chasing a failure. Update AGENTS.md to match.
-
-2. I want to see the sections in SpaceClaim over the original blade. Write a Python script that exports the raw cuts (sections_v02) and the smoothed sections (smoothed_v04) as curves, one STEP or IGES file per set, in the same coordinates and units as the original blade. I'll insert them in SpaceClaim myself. If you think this should be a SpaceClaim script instead, tell me why before writing it.
+Don't treat the plan as approved yet. I have more changes, which I'll send one at a time. For now:
+1. Give me the command to run profiles on the real data to make profiles_v04, and the command to export it as curves, so I can compare all three sets over the blade in SpaceClaim.
+2. For fixes 1-4: did each test fail before its fix and pass after? Give the counts.

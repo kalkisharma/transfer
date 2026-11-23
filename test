@@ -1,12 +1,26 @@
-Answers:
-1. Yes, read the A1/A2 logs and tell me what the tip face is: flat or not, and its angle to the span. I'll also check it in SpaceClaim. As far as I know, this blade's tip is a plain airfoil section with no cap. "flat" means the end face lies in the real tip plane, tilted or not. If the logs disagree with me, show me and don't change anything yet.
-2. Yes: find the corners precisely on each slice, and smooth along the span only if the line check flags them. Same rule for the LE.
-3. Yes: TE type is a setting, and detection stays as a check.
+Agreed:
+- Do small-TE smoothing before this blade's surface. Measure the TE radius on the raw cuts too, not only on the smoothed curves.
+- Install cadquery-ocp now so we find out early whether the network allows it.
+- A2: switch the tip position to the farthest-vertex value. List any decisions we made from A2's "fraction of tip" numbers.
+- I'll check the face 179 normal in SpaceClaim and send you the tilt.
 
-Order:
-- Small-TE smoothing: first compare this blade's TE radius with the 0.1%-chord limit. If the limit is already well below the TE radius here, defer it.
-- Do blunt TE after this blade's surface is built. Keep the surface code structured so the blunt case (side surface + base) slots in later.
+Next plan change: add a section review stage after the profile fixes, before the surface is built.
 
-Installing cadquery-ocp with pip is approved.
+Checks:
+- Chordwise (each section on its own): fit error against the raw cut points, smoothness, where the LE and TE points sit, and how much smoothing changes the thickness near the TE.
+- Spanwise (each section against its neighbours): LE/TE line wobble, plus jumps in chord, thickness or twist.
+- Surface fit: if a section can't be fitted within tolerance, don't add control points to force it. Flag the section and say by how much it is out.
+All limits are a fraction of local chord, or of the TE radius near the TE, set in one config file.
 
-The plan isn't approved yet. I'll send one more change next, a section review stage. Don't write code yet.
+Flagging:
+- If 10 or fewer sections are flagged, I review all of them.
+- If more are flagged, treat it as a likely systemic problem. I review the worst few plus a handful spread from root to tip.
+- Start with slices 20-28, since their TE detection didn't match.
+
+Review process:
+- Write a viewer I launch in my terminal. It shows the raw points, the fitted curve and the LE/TE points, with each point coloured by deviation, and moves through the flagged sections.
+- I talk you through each section, and you log my findings. No fixes during the review.
+- After the review, summarize the patterns. Fix shared causes in the code. One-off fixes are saved as per-section settings that are re-applied on every run.
+- Rerun all checks after any change.
+
+Reply with the full updated plan in order, with your confidence. If it looks complete, I'll approve it.

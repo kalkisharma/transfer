@@ -1,4 +1,3 @@
-Both ran. [OK, or paste any ERROR lines]
-Read the logs and report: the tip end measured all four ways, the face 179 tilt and flatness, and where the extra cuts landed.
-Commit steps 2 and 3 once the logs check out.
-Also: AGENTS.md line 123 still says A3 needs the tilt from me, so fix that. And confirm my four step 6/7 additions are in Next steps.
+Yes, do both, then commit and start step 4. Two notes for step 4:
+- Tilt is 0, so slice 84 is a plain slice at constant X. No tilted-plane mapping is needed for this blade. Keep the tilted case for future blades only, with a made-up test.
+- Spacing jumps near the tip (79-80 vs 80-84). Make sure smoothing, the line check and the later spanwise fit all use actual span position, not slice number. If any of them uses slice number, add a made-up test with uneven spacing that fails first.

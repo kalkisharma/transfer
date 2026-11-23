@@ -1,6 +1,6 @@
-Ran both. Read the summaries and report:
-- How many slices are over any limit, and which ones.
-- For slices 20-28: TE radius on the raw cut vs the smoothed curve, max fit error near the TE, and what detection says.
-- Thickness change at x/c 0.99 compared with smoothed_v04, which had over 5% on 11 slices and up to 38% on one.
-Don't change code yet.
-Also: next time you compare against old code, use a separate worktree or copy, not git stash.
+Good diagnosis. Commit step 4 now as a checkpoint, with the kink regression noted in AGENTS.md.
+
+Then propose, don't code yet:
+1. Local smoothing weight: low across the TE rounding, as much as needed elsewhere, ramping smoothly in between. Made-up test with LE kinks plus a small TE that fails first. Target: kinks at v04 levels or better, with the TE still within 5% of its radius.
+2. Slices 18, 20 and 22: don't skip them. Propose changing A3 to sample the TE rounding more finely, with a minimum number of points per TE, so these slices can be measured. Then recheck their TE type detection.
+3. Line check: 57 slices flagged at 1e-4 of chord (a few µm) is a systemic flag. Report the deviation distribution (median, 90th percentile, max) for each line type, before and after the weight fix. I'll give you my target surface mesh size at the LE and TE, and we'll set the limit from that.

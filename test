@@ -1,7 +1,3 @@
-Approved, with these additions:
-- Step 6: the LE, both TE edges and the TE tip line each sit at a fixed u on every section. Split the faces by knot insertion at those u values, so the faces meet with no gap and no slope break by construction. Put the seam on the TE tip line.
-- Step 6: at slice 9, match the spanwise slope as well as the position. Take the tangent from the original root geometry, so step 9 confirms there's no slope break instead of finding one.
-- Step 6 report: max and RMS distance from the raw cuts, as a fraction of chord, with the LE region reported separately.
-- Step 7: build the faces in OCP directly from the step 6 B-spline (degrees, knots, control net). No resampling or re-fitting.
+Good. Before step 2: confirm my four additions to steps 6 and 7 are in AGENTS.md under Next steps (fixed-u lines with the knot-insertion split, slope match at slice 9, the deviation report, OCP built straight from the B-spline).
 
-Yes, commit requirements.txt with step 1. Start step 1.
+Then do steps 2 and 3 together, since I run both in SpaceClaim. A3 measures and logs the face 179 tilt, so don't wait for me on that. Give me the run order and which result lines to send back.

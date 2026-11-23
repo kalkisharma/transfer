@@ -1,26 +1,7 @@
-Agreed:
-- Do small-TE smoothing before this blade's surface. Measure the TE radius on the raw cuts too, not only on the smoothed curves.
-- Install cadquery-ocp now so we find out early whether the network allows it.
-- A2: switch the tip position to the farthest-vertex value. List any decisions we made from A2's "fraction of tip" numbers.
-- I'll check the face 179 normal in SpaceClaim and send you the tilt.
+Approved, with these additions:
+- Step 6: the LE, both TE edges and the TE tip line each sit at a fixed u on every section. Split the faces by knot insertion at those u values, so the faces meet with no gap and no slope break by construction. Put the seam on the TE tip line.
+- Step 6: at slice 9, match the spanwise slope as well as the position. Take the tangent from the original root geometry, so step 9 confirms there's no slope break instead of finding one.
+- Step 6 report: max and RMS distance from the raw cuts, as a fraction of chord, with the LE region reported separately.
+- Step 7: build the faces in OCP directly from the step 6 B-spline (degrees, knots, control net). No resampling or re-fitting.
 
-Next plan change: add a section review stage after the profile fixes, before the surface is built.
-
-Checks:
-- Chordwise (each section on its own): fit error against the raw cut points, smoothness, where the LE and TE points sit, and how much smoothing changes the thickness near the TE.
-- Spanwise (each section against its neighbours): LE/TE line wobble, plus jumps in chord, thickness or twist.
-- Surface fit: if a section can't be fitted within tolerance, don't add control points to force it. Flag the section and say by how much it is out.
-All limits are a fraction of local chord, or of the TE radius near the TE, set in one config file.
-
-Flagging:
-- If 10 or fewer sections are flagged, I review all of them.
-- If more are flagged, treat it as a likely systemic problem. I review the worst few plus a handful spread from root to tip.
-- Start with slices 20-28, since their TE detection didn't match.
-
-Review process:
-- Write a viewer I launch in my terminal. It shows the raw points, the fitted curve and the LE/TE points, with each point coloured by deviation, and moves through the flagged sections.
-- I talk you through each section, and you log my findings. No fixes during the review.
-- After the review, summarize the patterns. Fix shared causes in the code. One-off fixes are saved as per-section settings that are re-applied on every run.
-- Rerun all checks after any change.
-
-Reply with the full updated plan in order, with your confidence. If it looks complete, I'll approve it.
+Yes, commit requirements.txt with step 1. Start step 1.

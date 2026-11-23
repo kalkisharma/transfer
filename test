@@ -1,6 +1,4 @@
-Good diagnosis. Commit step 4 now as a checkpoint, with the kink regression noted in AGENTS.md.
-
-Then propose, don't code yet:
-1. Local smoothing weight: low across the TE rounding, as much as needed elsewhere, ramping smoothly in between. Made-up test with LE kinks plus a small TE that fails first. Target: kinks at v04 levels or better, with the TE still within 5% of its radius.
-2. Slices 18, 20 and 22: don't skip them. Propose changing A3 to sample the TE rounding more finely, with a minimum number of points per TE, so these slices can be measured. Then recheck their TE type detection.
-3. Line check: 57 slices flagged at 1e-4 of chord (a few µm) is a systemic flag. Report the deviation distribution (median, 90th percentile, max) for each line type, before and after the weight fix. I'll give you my target surface mesh size at the LE and TE, and we'll set the limit from that.
+Go ahead in that order, starting with the weight fix. Additions:
+1. Weight fix: LE radius change is a pass/fail check, not just a report. Target under 3%. If the weight fix doesn't get there, add the same floor-and-ramp at the LE nose, kept narrow so it doesn't protect the sliver kinks behind it.
+2. A3 TE sampling: weight each point in the fit by the arc length it represents, so the denser TE points don't pull the fit. Add a test showing a section's fit doesn't change when one region is resampled denser.
+3. Line check: agreed, leave slices 0-8 out. My target surface sizes: LE [__] mm, TE [__] mm. Set the line-check limit to 10% of the local target size.

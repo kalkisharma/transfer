@@ -1,4 +1,12 @@
-Good. Three things:
-1. Fix 2: keep it only if a test shows it's needed. Add a made-up blade with a much smaller TE radius, closer to future blades. If the old search fails on it, keep the fix with that test. If not, undo it.
-2. You changed the test cut to give at least 5 points per TE face. What does the code do when a real cut gives fewer than that? It should stop or flag that slice, not quietly produce a bad fit. Add a test for that case.
-3. Why is slice 80 held exact in --exact 0-9,80? Is 80 the last slice? This blade's tip is a plain airfoil section, so I want the tip sections smoothed like the rest. More on the tip in my next message. Just answer for now, don't change anything.
+Yes, commit.
+
+Next change: make the tip type a setting.
+- "flat" (this blade): the tip is a plain airfoil section. Smooth every slice through 80 like the rest. Run the loft out to the tip face and close it with a flat end face. No kept tip piece and no tip join. For the last section, use the tip face edge or extrapolate, whichever you recommend, and say why.
+- "cap" (future blades): keep the original tip piece and the exact slice at 80, as now.
+The root stays as it is: kept piece, exact 0-9, join at 9.
+
+Design these in now for future blades, with made-up test blades:
+- Blunt TE: the TE corners are hard breaks. Pressure side, suction side and TE base are separate curves that meet exactly at the corners, with no smoothing across them. Smooth the corner lines along the span the same way as the LE. The TE point count must handle non-round TEs.
+- Small TE: the smoothing limit is 0.1% of chord, about 10x a 1e-4-chord TE radius. Near the TE, scale the limit to the local TE radius or thickness instead.
+
+Reply with the updated plan and your confidence. Don't write code yet.

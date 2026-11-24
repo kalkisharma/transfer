@@ -1,4 +1,3 @@
-Yes, option 1, then option 2. Also:
-- Measure the LE radius the same way on both curves: the same dense resampling and the same arc-length window around the LE. If 6 and 15 then drop under 3%, the method was the cause.
-- On slices where face-join kinks sit inside the LE measuring window, the raw-cut LE radius isn't a valid reference. Propose replacing "LE radius change < 3%" on those slices with: (a) fit error near the LE within a limit, as a fraction of the LE radius; (b) the LE radius varying smoothly along the span, with no slice-to-slice jumps. Keep "change < 3%" only on slices with a clean nose.
-No code changes until I approve.
+Approved 1-5, with one change: on the first real run, make (a) and (b) report-only. On not-clean slices the smoothed curve should move off the kinked raw points, so a fixed 2% could fail exactly where the smoothing is doing its job. Show me the (a) and (b) distributions on the not-clean slices, and we'll set the limits from them.
+Put slices 21, 22 and 63-68 on the review list either way.
+After this, do the line-check diagnosis.

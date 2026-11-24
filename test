@@ -1,4 +1,7 @@
-Good diagnosis. Go with option 1, in your order, with two additions:
-- Test that the fix doesn't depend on sampling density: the same small TE cut with 6, 25 and 50 points on the rounding should give about the same TE movement and kink removal, with the 6-point case still flagged as too sparse. If the result changes with point count, scale by the TE radius instead of the knot interval.
-- Rerun the normal-TE case, and report the LE radius change as well.
-Then report back. No commit yet.
+Commit it. I'll run smoothing on sections_v03 now so we see the weight fix on its own; give me the exact commands.
+
+Before the A3 TE-sampling change:
+- On the real cuts (sections_v03), measure the gap where face pieces meet near the TE, per slice. Report the max and median, compared with the planned 7 µm TE spacing.
+- If gaps can exceed that spacing, merge the piece ends at each join so there's no zigzag. Add a made-up test with a 1e-5-chord gap at 50 points that must pass.
+
+Mesh sizes for the line check: LE ___ mm, TE ___ mm.

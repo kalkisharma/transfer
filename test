@@ -1,5 +1,4 @@
-Yes, go ahead with 4e. Answers:
-- Q3: yes. No new kinks anywhere, and the 64-67 kinks don't get worse.
-- Q4: yes, those are my additions.
-
-One check before writing the tests: from sections_v03 and smoothed_v06, measure how far the remaining kinks and the face joins near the nose sit from the LE, along the curve as a fraction of chord. Do this on 64-67 and on the 17 slices that fail the LE radius check. If any sit inside 0.01 chord, the default zone would lock them in. Set the zone to stay clear of them and tell me what you chose.
+Yes, option 1, then option 2. Also:
+- Measure the LE radius the same way on both curves: the same dense resampling and the same arc-length window around the LE. If 6 and 15 then drop under 3%, the method was the cause.
+- On slices where face-join kinks sit inside the LE measuring window, the raw-cut LE radius isn't a valid reference. Propose replacing "LE radius change < 3%" on those slices with: (a) fit error near the LE within a limit, as a fraction of the LE radius; (b) the LE radius varying smoothly along the span, with no slice-to-slice jumps. Keep "change < 3%" only on slices with a clean nose.
+No code changes until I approve.

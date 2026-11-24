@@ -1,3 +1,3 @@
-Ran it. Read the new smoothed and profiles summaries and compare them with v05: kinks, slices over limits, TE and LE radius change, thickness at x/c 0.99, and slices 18-28.
-Commit the join fix now. The run used 770ef6b, so it doesn't depend on the fix.
-Put slice 33 (the 280 µm join gap) at the top of the review list.
+Good result. Go ahead with (b), the LE nose floor, with a made-up test first. Targets: LE radius change under 3% on all slices except 20 and 22, and no new kinks on 64-67.
+
+Also diagnose the line check before fixing anything: rerun it with each slice's smoothing weight replaced by a smooth curve along the span (for example a running median over 5 slices), and report how many slices are flagged. Don't change code for this yet.

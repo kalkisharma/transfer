@@ -1,3 +1,1 @@
-B: fix the TE counter first. Suggestion: find the rounding by curvature (turn per unit arc length), not turn per point, so it doesn't depend on point spacing, and treat isolated single-point spikes as face-join kinks, not the rounding. Made-up test first: a densely sampled round TE with a 4-5° face-join kink near it, plus the same TE at v03 density, which must give the same radius. Then report the counts on the 33 slices and give me the commands.
-Add 18 to the review list with 20 and 22 (CAD corners/steps at the TE).
-Layout: approved, but do it after the v08 smoothing run, as its own commit, with tests passing.
+Change of order: do the work/ layout right after the TE counter fix, before I run v08. Its own commit, tests passing. Then give me the smoothing and profiles commands with the new paths.

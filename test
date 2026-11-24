@@ -1,4 +1,6 @@
-Ran OK, smoothed_v10 and profiles_v10 written. Confirm the saved files match your in-memory numbers (78/83, 5 kinks, "TE too sparse" only on 0-7 and 18), and check the TE edge lines in the profiles plot are smooth through slice 9.
-Slice 18: add a config skip so the loft leaves it out for now. Keep it first on the review list.
-If v10 checks out, start step 6: a rough first pass of the loft from profiles_v10, then step 7, the solid and STEP. Keep it minimal so I have a blade to look at; we refine after the review.
-Also note for the review: small notch in the upper TE edge near 0.2 span (around slices 18-22), about 0.88 x/c against 0.895 around it.
+Commit steps 6 and 7 if you haven't. The blade is OK as a first pass. Next: add the 4-face split now so the LE and TE lines exist as real edges in the CAD.
+- Split the side face at the fixed LE, both TE edge and TE tip positions by knot insertion, with no refit. Put the seam on the TE tip line.
+- Faces: suction side, upper TE rounding, lower TE rounding, pressure side. Name them in the STEP if possible.
+- Check that the solid is still valid and the volume is unchanged.
+- Also export the LE, TE edge and TE tip lines as separate curves (STEP or IGES), so I can check them over the original in SpaceClaim.
+Write blade_body_v02 and give me the command.

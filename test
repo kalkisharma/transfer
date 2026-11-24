@@ -1,5 +1,5 @@
-Option 3: option 1 now, and fix the kink finder later if the review needs it.
-
-One concern with the jump check: comparing each slice with only its two nearest neighbours misses runs of bad slices, because neighbours that are bad in the same way agree with each other. 63-68 is exactly that kind of run. Use a wider fit that leaves the slice itself out (for example a robust fit over ±3-4 slices), and keep the protection for the end slices. Add a made-up test with a run of 4 bad slices that must be flagged.
-
-(a) and (b) stay report-only on the first real run, as agreed. Finish the remaining wiring, run the tests, and give me the commands.
+Ran both. Read smoothed_v07 and profiles_v07 and report:
+- Compared with v06: kinks, slices passing, and confirmation that the curve changes on ~22 slices come only from the join fix.
+- (a) and (b) distributions on the not-clean slices, plus your proposed limits for each, with reasons. Don't apply them yet.
+- Then do the line-check diagnosis (weight replaced by a running median over 5 slices) and report how many slices get flagged.
+Commit any AGENTS.md updates when you're done.

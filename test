@@ -1,3 +1,5 @@
-Answer on arc-length weighting: skip it unless a test shows it's needed. Test: on a made-up blade, sample the TE zone densely the way the new A3 will, and compare the smoothed fit with normal sampling. If the fits differ by more than a small fraction of the fit limit outside the TE zone, add weighting there only (never inside the TE zone). Otherwise drop it and note why in AGENTS.md.
-
-Then continue 4d: tests for a3_sampling.py on made-up curves, connect it to A3, tell me what 1e-4 chord is in µm compared with TE_SPACING, and give me the SpaceClaim run steps and what to send back. Commit when tests pass.
+No new session needed, keep going in this one. Finish 4d:
+1. Connect a3_sampling.py to A3.
+2. Tell me TE_SPACING and 1e-4 chord in µm for this blade, and how many TE points slices 18, 20 and 22 should now get.
+3. Give me the SpaceClaim run steps and what to send back.
+Commit when tests pass. Don't wrap up for a new session unless context goes over 70%.

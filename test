@@ -1,22 +1,5 @@
-Resuming after a session restart. Before doing anything:
-1. Read AGENTS.md ("Data handling", "Status", "Next steps").
-2. Run git log --oneline -8 and git status. Report any uncommitted changes and what they look like they're for.
-3. Run the tests and report pass/fail counts.
-Then give me a short status and wait for my go-ahead.
+Yes, go ahead with 4e. Answers:
+- Q3: yes. No new kinks anywhere, and the 64-67 kinks don't get worse.
+- Q4: yes, those are my additions.
 
-Where we are (check this against AGENTS.md and correct anything that's wrong):
-- Done and committed: config file; A2 vertex tip; A3 flat tip (sections_v03, slices 81-84 with the tip outline as 84); 4a TE-scaled limit; 4b local smoothing weight with the floor scaled by (knot interval / mean interval)^5 (770ef6b); join fix for finely cut TEs (d128fb4).
-- Real-blade run of 4b (smoothed_v06 / profiles_v06 from sections_v03): kinks 145 -> 6 (slices 20, 22, 64-67), 65 of 83 slices pass. 17 slices fail the LE radius check (>3%). Line check flags 64 slices. TE radius checks aren't meaningful yet: slices 18-84 are flagged "too sparse".
-
-In progress when the session closed (it may be partly done; check git status):
-a. Step 4e, LE nose floor: narrow floor-and-ramp at the LE nose, same pattern as the TE, with a made-up test that fails first. Targets: LE radius change under 3% on all slices except 20 and 22, and no new kinks on 64-67.
-b. Line-check diagnosis, with no code change: rerun the line check with each slice's smoothing weight replaced by a smooth curve along the span (for example a running median over 5 slices), and report how many slices are flagged. The suspicion is that the weight jumping from slice to slice (for example on 24-28) adds wobble along the span.
-
-Next after that:
-- 4d: A3 finer TE sampling (at least 25 points per TE, about 7 µm spacing within the TE zone). I run A3 to get sections_v04, then smoothing and profiles.
-- 5: section review. Order: slice 33 (large join gap away from the TE), 20 and 22 (too few TE points), 64-67 (nose kinks), then other flags, capped at 10.
-- Then steps 6-11 as in AGENTS.md, including my step 6/7 additions.
-
-Mesh sizes: not given yet. Keep the line check report-only until I give them.
-
-Rules, as in AGENTS.md: one step at a time; a made-up test that fails first for every fix; no commit until I say so; use a worktree or copy to compare against old code, never git stash; no real geometry values in code, docs or commits. Update AGENTS.md if anything above is missing from it.
+One check before writing the tests: from sections_v03 and smoothed_v06, measure how far the remaining kinks and the face joins near the nose sit from the LE, along the curve as a fraction of chord. Do this on 64-67 and on the 17 slices that fail the LE radius check. If any sit inside 0.01 chord, the default zone would lock them in. Set the zone to stay clear of them and tell me what you chose.

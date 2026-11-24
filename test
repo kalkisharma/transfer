@@ -1,3 +1,5 @@
-Approved 1-5, with one change: on the first real run, make (a) and (b) report-only. On not-clean slices the smoothed curve should move off the kinked raw points, so a fixed 2% could fail exactly where the smoothing is doing its job. Show me the (a) and (b) distributions on the not-clean slices, and we'll set the limits from them.
-Put slices 21, 22 and 63-68 on the review list either way.
-After this, do the line-check diagnosis.
+Option 3: option 1 now, and fix the kink finder later if the review needs it.
+
+One concern with the jump check: comparing each slice with only its two nearest neighbours misses runs of bad slices, because neighbours that are bad in the same way agree with each other. 63-68 is exactly that kind of run. Use a wider fit that leaves the slice itself out (for example a robust fit over ±3-4 slices), and keep the protection for the end slices. Add a made-up test with a run of 4 bad slices that must be flagged.
+
+(a) and (b) stay report-only on the first real run, as agreed. Finish the remaining wiring, run the tests, and give me the commands.

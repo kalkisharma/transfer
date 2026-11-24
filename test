@@ -1,2 +1,3 @@
-Ran OK. A3 finished with no errors.
-Check the log and sections_v04: slices 0-84 all present, points outside the TE zone match sections_v03, and TE point counts on 18, 20 and 22. Then give me the smoothing and profiles commands. Don't change code yet.
+B: fix the TE counter first. Suggestion: find the rounding by curvature (turn per unit arc length), not turn per point, so it doesn't depend on point spacing, and treat isolated single-point spikes as face-join kinks, not the rounding. Made-up test first: a densely sampled round TE with a 4-5° face-join kink near it, plus the same TE at v03 density, which must give the same radius. Then report the counts on the 33 slices and give me the commands.
+Add 18 to the review list with 20 and 22 (CAD corners/steps at the TE).
+Layout: approved, but do it after the v08 smoothing run, as its own commit, with tests passing.

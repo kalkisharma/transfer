@@ -1,4 +1,12 @@
-Go ahead in that order, starting with the weight fix. Additions:
-1. Weight fix: LE radius change is a pass/fail check, not just a report. Target under 3%. If the weight fix doesn't get there, add the same floor-and-ramp at the LE nose, kept narrow so it doesn't protect the sliver kinks behind it.
-2. A3 TE sampling: weight each point in the fit by the arc length it represents, so the denser TE points don't pull the fit. Add a test showing a section's fit doesn't change when one region is resampled denser.
-3. Line check: agreed, leave slices 0-8 out. My target surface sizes: LE [__] mm, TE [__] mm. Set the line-check limit to 10% of the local target size.
+Step 4b, option A. Diagnose before fixing. On the made-up small-TE blade, run one quick experiment per suspect and report how far the TE moves in each:
+a. Scale the overall smoothing weight up and down 10x. Does the TE movement change?
+b. Set the penalty to exactly zero across the whole ramp zone. Does the TE still move? If yes, the pull is coming through spline basis functions that span the zone.
+c. Weight the TE points 100x. Does the movement go away?
+
+Correction to my earlier note: don't weight points by arc length in the TE zone. That makes suspect c worse.
+
+The A3 change will give each TE at least 25 points. Add a made-up small-TE case sampled that way; that's the one that must pass. Keep the 6-point case, but it should be flagged as too sparse, not quietly pass or fail.
+
+If none of a-c fixes it cleanly, propose either holding the TE rounding points as hard constraints, or fitting the TE rounding as its own segment joined with matching slope. The second also fits the 4-face split and the blunt-TE plan.
+
+No commit until the small-TE test passes.

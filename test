@@ -1,7 +1,3 @@
-Commit it. I'll run smoothing on sections_v03 now so we see the weight fix on its own; give me the exact commands.
-
-Before the A3 TE-sampling change:
-- On the real cuts (sections_v03), measure the gap where face pieces meet near the TE, per slice. Report the max and median, compared with the planned 7 µm TE spacing.
-- If gaps can exceed that spacing, merge the piece ends at each join so there's no zigzag. Add a made-up test with a 1e-5-chord gap at 50 points that must pass.
-
-Mesh sizes for the line check: LE ___ mm, TE ___ mm.
+Ran it. Read the new smoothed and profiles summaries and compare them with v05: kinks, slices over limits, TE and LE radius change, thickness at x/c 0.99, and slices 18-28.
+Commit the join fix now. The run used 770ef6b, so it doesn't depend on the fix.
+Put slice 33 (the 280 µm join gap) at the top of the review list.

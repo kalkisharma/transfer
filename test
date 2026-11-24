@@ -1,4 +1,7 @@
-1. Approve (a) at 10% and (b') at 0.02, as review flags only, not pass/fail, until after the section review. Both limits come from this blade's own numbers, and (a) has a thin margin.
-2. (b') flags slice 15, the only clean nose. Tell me why, briefly. No code change.
-3. Note in AGENTS.md: (b') misses runs longer than 6 slices (65 for now, already covered by the 63-68 review). The line check stays report-only until I give mesh sizes. Slices 12-19 are flagged with no smoothing, likely the root shape change; add that to the review as a question.
-4. Commit the code. Update AGENTS.md next steps: 4d A3 TE sampling, then the section review. Then stop for tonight.
+Keep going. Two things, in order:
+
+1. LE radius window: make it scale with the local LE radius instead of a fixed 0.01 chord. Add a made-up test with a blunt root-like nose (radius about 0.1 chord) that fails first. Rerun the LE checks on smoothed_v07 and report whether slice 15's (b') flag goes away and what else changes. No new smoothing run is needed, since only the measurement changes.
+
+2. Then start 4d, A3 finer TE sampling, as proposed earlier: TE_ZONE, TE_SPACING and MIN_TE_POINTS, with points elsewhere unchanged. Write the TE helpers as plain Python and test them on made-up points. Then give me the exact SpaceClaim run steps and what to send back.
+
+Commit after each one if the tests pass. Line check stays report-only; I don't have mesh sizes yet.

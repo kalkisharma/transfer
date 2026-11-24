@@ -1,6 +1,4 @@
-Commit the span fix. Then do all four in your recommended order, each with a made-up test that fails first, committing each one:
-1. 2 extra knots at the rounding ends (32-40).
-2. Profiles uses the smoothing tool's TE point count (20, 22).
-3. Median reference curvature for the TE edges (root edges, slice 9).
-4. Weight search: don't jump from 10 to 100. Use finer steps (about 2x) or bisect between the last pass and the first fail.
-Then give me the v10 smoothing and profiles commands. Target: at least v07's 77 passing and no more than its 6 kinks, with the TE checks working.
+Ran OK, smoothed_v10 and profiles_v10 written. Confirm the saved files match your in-memory numbers (78/83, 5 kinks, "TE too sparse" only on 0-7 and 18), and check the TE edge lines in the profiles plot are smooth through slice 9.
+Slice 18: add a config skip so the loft leaves it out for now. Keep it first on the review list.
+If v10 checks out, start step 6: a rough first pass of the loft from profiles_v10, then step 7, the solid and STEP. Keep it minimal so I have a blade to look at; we refine after the review.
+Also note for the review: small notch in the upper TE edge near 0.2 span (around slices 18-22), about 0.88 x/c against 0.895 around it.

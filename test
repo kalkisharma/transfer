@@ -1,12 +1,4 @@
-Step 4b, option A. Diagnose before fixing. On the made-up small-TE blade, run one quick experiment per suspect and report how far the TE moves in each:
-a. Scale the overall smoothing weight up and down 10x. Does the TE movement change?
-b. Set the penalty to exactly zero across the whole ramp zone. Does the TE still move? If yes, the pull is coming through spline basis functions that span the zone.
-c. Weight the TE points 100x. Does the movement go away?
-
-Correction to my earlier note: don't weight points by arc length in the TE zone. That makes suspect c worse.
-
-The A3 change will give each TE at least 25 points. Add a made-up small-TE case sampled that way; that's the one that must pass. Keep the 6-point case, but it should be flagged as too sparse, not quietly pass or fail.
-
-If none of a-c fixes it cleanly, propose either holding the TE rounding points as hard constraints, or fitting the TE rounding as its own segment joined with matching slope. The second also fits the 4-face split and the blunt-TE plan.
-
-No commit until the small-TE test passes.
+Good diagnosis. Go with option 1, in your order, with two additions:
+- Test that the fix doesn't depend on sampling density: the same small TE cut with 6, 25 and 50 points on the rounding should give about the same TE movement and kink removal, with the 6-point case still flagged as too sparse. If the result changes with point count, scale by the TE radius instead of the knot interval.
+- Rerun the normal-TE case, and report the LE radius change as well.
+Then report back. No commit yet.

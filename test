@@ -1,1 +1,4 @@
-Change of order: do the work/ layout right after the TE counter fix, before I run v08. Its own commit, tests passing. Then give me the smoothing and profiles commands with the new paths.
+Ran OK, smoothed_v09 and profiles_v09 written. Do your checks against v07. Also:
+1. In the smoothing plot, kinks after smoothing spike to 8 on one slice around 0.45 span, higher than its before value. Which slice is that, and why did smoothing add kinks there?
+2. The profiles plot's span axis runs 0.05 to 0.45, but the smoothing plot's runs 0.15 to 1.0. Are they using different span definitions, or is the profiles plot cut off? Use the same span definition in every plot.
+3. The lower TE edge dips to about 0.94 x/c near 0.1 span. Is that a real root feature or a detection problem?

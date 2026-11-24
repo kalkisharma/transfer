@@ -1,5 +1,4 @@
-Ran both. Read smoothed_v07 and profiles_v07 and report:
-- Compared with v06: kinks, slices passing, and confirmation that the curve changes on ~22 slices come only from the join fix.
-- (a) and (b) distributions on the not-clean slices, plus your proposed limits for each, with reasons. Don't apply them yet.
-- Then do the line-check diagnosis (weight replaced by a running median over 5 slices) and report how many slices get flagged.
-Commit any AGENTS.md updates when you're done.
+1. Approve (a) at 10% and (b') at 0.02, as review flags only, not pass/fail, until after the section review. Both limits come from this blade's own numbers, and (a) has a thin margin.
+2. (b') flags slice 15, the only clean nose. Tell me why, briefly. No code change.
+3. Note in AGENTS.md: (b') misses runs longer than 6 slices (65 for now, already covered by the 63-68 review). The line check stays report-only until I give mesh sizes. Slices 12-19 are flagged with no smoothing, likely the root shape change; add that to the review as a question.
+4. Commit the code. Update AGENTS.md next steps: 4d A3 TE sampling, then the section review. Then stop for tonight.
